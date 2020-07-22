@@ -186,8 +186,6 @@ Tb_lizard=function(T_a, T_g, u, svl, m, psi, rho_S, elev, doy, sun=TRUE, surface
 
 zenith_angle=function(doy, lat, lon, hour, offset=NA){
   
-  stopifnot(doy>0, doy<367, lat>=-90, lat<=90, lon>=-180, lon<=180, hour>=0, hour<=24)
-  
   lat=lat*pi/180 #to radians
   
   RevAng = 0.21631 + 2 * atan(0.967 * tan(0.0086 * (-186 + doy))); # Revolution angle in radians

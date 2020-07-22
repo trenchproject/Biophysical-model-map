@@ -1,0 +1,26 @@
+[general]
+creator=R package 'raster'
+created=2020-07-17 13:41:57
+[georeference]
+nrows=194
+ncols=460
+xmin=-124.625
+ymin=25.25
+xmax=-67.125
+ymax=49.5
+projection=+proj=longlat +ellps=WGS84 +no_defs
+[data]
+datatype=FLT4S
+byteorder=little
+nbands=1
+bandorder=BIL
+categorical=FALSE
+minvalue=-14.9047555923462
+maxvalue=25.6874237060547
+nodatavalue=-3.4e+38
+[legend]
+legendtype=
+values=
+color=
+[description]
+layername=temp

@@ -1,9 +1,14 @@
 source("functions.R", local = TRUE)
+monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
-AOI = aoi_get(state = "conus")
-p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2)
+# if (latest ) {
+  AOI = aoi_get(state = "conus")
+  p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2)
+  r = raster::brick(p)
+#   writeRaster(r, paste0(Sys.Date(), "weather_data"))
+# 
+# }
 
-r = raster::brick(p)
 names(r) = c('tmin', 'tmax', 'wind')
 #param_meta$gridmet
 df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
@@ -24,14 +29,23 @@ shinyServer <- function(input, output, session) {
     hour
   })
   
+  output$future <- renderUI({
+    if(input$year != 2020) {
+      fluidRow(
+        column(5, tipify(radioGroupButtons("scenario", "Scenarios", c("Optimistic", "Intermediate", "Pessimistic"), status = "danger", size = "sm", justified = TRUE),"RCP2.6 / RCP6.0 / RCP8.5")),
+        column(4, offset = 1, selectInput("month", "Month", choices = monthNames))
+      )
+    }
+  })
+  
   # widgets to show
   output$dynamicUI <- renderUI({
     weather <- tipify(radioGroupButtons("weather", list(icon("wind"), "Weather"), 
-                           choices =  c('<i class="fas fa-sun"></i>' = "Sunny", 
-                                        '<i class="fas fa-cloud-sun"></i>' = "Partially cloudy", 
-                                        '<i class="fas fa-cloud"></i>' =  "Overcast"), 
+                           choices =  c('<i class="fas fa-sun"></i>' = "Clear", 
+                                        '<i class="fas fa-cloud-sun"></i>' = "Partly sunny", 
+                                        '<i class="fas fa-cloud"></i>' =  "Cloudy"), 
                            status = "info", justified = TRUE),
-                      "Sunny / Partially cloudy / Overcast")
+                      "Clear / Partly sunny / Cloudy")
     # weather <- selectInput("weather", list(icon("wind"), "Weather"), 
     #                        choices =  c("Sunny", "Partially cloudy", "Overcast"))
                            #choicesOpt = list(icon = c("fa fa-sun", "fa fa-cloud-sun", "glyphicon glyphicon-cloud")),
@@ -111,12 +125,24 @@ shinyServer <- function(input, output, session) {
     validate(
       need(input$species %in% c("Lizard", "Grasshopper", "Butterfly", "Mussel"), "")
     )
-    df$zenith <- zenith_angle(doy = day_of_year(Sys.Date()), lat = df$y, lon = df$x, hour = 13)
+    if(input$year == 2020) {
+      df$zenith <- zenith_angle(doy = day_of_year(Sys.Date() - 2), lat = df$y, lon = df$x, hour = hour())
+    } else {
+      validate(
+        need(input$month, "")
+      )
+      df$zenith <- zenith_angle(doy = (which(input$month %in% monthNames) - 1) * 30 + 15, lat = df$y, lon = df$x, hour = hour())
+    }
     df_raster <- df
     coordinates(df_raster) <- ~ x + y
     gridded(df_raster) <- TRUE
     crs(df_raster) <- "+proj=longlat +ellps=WGS84 +no_defs"
     zenith <- raster(df_raster)
+    
+    if (input$year != 2020) {
+      zenith <- resample(zenith, airTemp())
+    }
+    zenith
   })
   
   albedo <- reactive({
@@ -134,30 +160,53 @@ shinyServer <- function(input, output, session) {
   })
   
   airTemp <- reactive({
-    diurnal_temp_variation_sine(r$tmax - 273.15, r$tmin - 273.15, hour()) + input$offset
+    if (input$year == 2020) {
+      diurnal_temp_variation_sine(r$tmax - 273.15, r$tmin - 273.15, hour()) + input$offset
+    } else {
+      if (input$scenario == "Optimistic") {
+        scn <- 26
+      } else if (input$scenario == "Intermediate") {
+        scn <- 60
+      } else {
+        scn <- 85
+      }
+      raster(paste0("year", input$year, "/rcp", scn, "/", input$month, ".grd"))
+    }
   })
   
+  aug26 <- raster("year2090/rcp26/Aug.grd")
+  aug85 <- raster("year2090/rcp85/Aug.grd")
+  rasterVis::levelplot(aug26)
+  rasterVis::levelplot(aug85)
   bodyTemp <- reactive({
     validate(
       need(input$species, "")
     )
     
+    if (input$year != 2020) {
+      r <- resample(r, airTemp())
+      elevData <- resample(elevData, airTemp())
+    }
+    
     if (input$species %in% c("Grasshopper", "Butterfly", "Salamander", "Snail", "Mussel")) {
       validate(
         need(input$weather, "")
       )
-      if (input$weather == "Sunny") {
+      if (input$weather == "Clear") {
         rad <- 900
         CC <- 0
-        k_d <- 0.1
-      } else if (input$weather == "Partially cloudy") {
+        k_d <- 0.1  # proportion of solar radiation that is diffuse
+        kt <- 0.75  # clearness index: https://www.homerenergy.com/products/pro/docs/latest/clearness_index.html
+      } else if (input$weather == "Partly sunny") {
         rad <- 500
         CC <- 0.5
         k_d <- 0.5
+        kt <- 0.5
       } else {
         rad <- 200
         CC <- 1
         k_d <- 1
+        kt <- 0.25
       }
     }
     
@@ -184,7 +233,7 @@ shinyServer <- function(input, output, session) {
                       surface = surface,
                       alpha_S = 0.9,
                       alpha_L = 0.965,
-                      F_d=0.8, 
+                      F_d=0.5, 
                       F_r=0.5, 
                       F_a=0.5, 
                       F_g=0.5
@@ -196,7 +245,7 @@ shinyServer <- function(input, output, session) {
                            T_g = airTemp() + 5, 
                            u = r$wind, 
                            H = rad, 
-                           K_t = 0.7, 
+                           K_t = kt, 
                            psi = zenith(), 
                            L = input$length / 1000, # in m 
                            Acondfact = 0.25, 
@@ -270,18 +319,7 @@ shinyServer <- function(input, output, session) {
     
     Tb
   })
-  
-  # danger <- reactive({
-  #   d.df <- rasterToPoints(bodyTemp()) %>% as.data.frame()
-  #   print(head(d.df))
-  #   d.df$layer
-  #   print(head(ctmax))
-  #   coordinates(ctmax) <- ~ x + y
-  #   gridded(ctmax) <- TRUE
-  #   danger <- raster(ctmax)
-  # 
-  # })
-  
+
   output$mymap <- renderLeaflet({
     validate(
       need(bodyTemp(), "")
@@ -335,7 +373,12 @@ shinyServer <- function(input, output, session) {
       addRasterImage(bodyTemp(), colors = pal, group = "Body temperatures", opacity = 0.6) %>%
       addRasterImage(airTemp(), colors = pal_air, group = "Air temperatures", opacity = 0.6) %>%
       setView(lng=-98.5795, lat=39.8283, zoom=4) %>%
-      addLayersControl(baseGroups = c("Body temperatures", "Air temperatures"))
+      addLayersControl(baseGroups = c("Body temperatures", "Air temperatures")) %>%
+      addLegend(pal = pal,
+                values = c(min, max),
+                group = "Body legend",
+                position = "bottomright",
+                title = "Body temperatures (°C)")
 
   })
   
@@ -390,8 +433,7 @@ shinyServer <- function(input, output, session) {
                   values = c(min, max),
                   group = "Body legend",
                   position = "bottomright",
-                  title = "Body temperatures (°C)") %>%
-        hideGroup(group = "Air legend")
+                  title = "Body temperatures (°C)")
     } else {
       leafletProxy('mymap') %>% clearControls() %>%
         addLegend(pal = pal_air,
@@ -399,6 +441,16 @@ shinyServer <- function(input, output, session) {
                   group = "Air legend",
                   position = "bottomright",
                   title = "Air temperatures (°C)")
+    }
+  })
+  
+  observeEvent(input$year, {
+    if (input$year != 2020) {
+      hide("hour")
+      hide("offset")
+    } else {
+      show("hour")
+      show("offset")
     }
   })
 }

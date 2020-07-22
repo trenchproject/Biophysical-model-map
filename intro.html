@@ -1,0 +1,46 @@
+<h3>Model description</h3>
+
+This activity uses weather data to predict organism's body tempeartures across the US. Current weather data are obtained through gridMET and include daily maximum, minimum temperatures and wind speed. The temperature data are converted to hourly temperatures by, <code>TrenchR::diurnal_temp_variation_sine</code> function. <br>
+
+For the future weather data, it obtians monthly average air temperatures from the CMIP5 multimodel ensemble. This gridded projection is based on the Community Climate System Model version 4 assuming representative concentration pathway (RCP) 2.6, 6.0 and 8.5, which correspond to "Optimistic", "Intermediate" and "Pessimistic" estimates respectively.
+These projections represent a greenhouse gas concentration trajectory, all of which can possibly happen in the future.
+RCP2.6 is a pathway where radiative forcing peaks at approximately 3 W/m <sup>2</sup> before 2100 and then declines.
+RCP6.0 is an intermediate stabilisation pathways in which radiative forcing is stabilised at approximately 6.0 W/m <sup>2</sup> after 2100. RCP8.5 is not the most realistic projection, and is considered more as the worst-case climate change scenario. The projection pathways for each scenario are depicted in the graph below.
+
+<p align='center'>
+<img src="RCP.png" width = "600px"/>
+</p>
+
+
+For any functions that require ground temperatures, they are assumed to be 5 °C warmer than the air temperatures.
+Elevation data are obtained from NOAA ETOPO1 Global Relief Model, grid-registered ETOPO1 Ice Surface.
+Zenith angle was calculated using <code>TrenchR::zenith_angle</code> function for each point on the map by the longitude, latitude and the day of the year.
+Surface albedo is set to be 0.25 for grass, 0.1 for dark soil and 0.75 for snow surface as listed in Campbell & Norman (1997).
+Radiation is estimated as 900 W/m <sup>2</sup>, 500 W/m <sup>2</sup> and 200 W/m <sup>2</sup> for a clear day, a partly sunny day and a cloudy day respectively.
+
+<h4>Lizards</h4>
+
+Lizard body temperatures are calculated based on <code>TrenchR::Tb_lizard</code> function. Lizard solar absorptivity and thermal absoptivity are set to 0.9 and 0.965, respectively. View factors between the surface of the lizard and diffuse solar radiation, reflected solar radiation, atmospheric radiation and ground thermal radation are all 0.5, assuming that the lizards are flat on the ground for simplification.
+
+
+<h4>Grasshoppers</h4>
+Grasshopper body temperatures are computed using <code>TrenchR::Tb_grasshopper</code> function.
+Clearness index is approximated to 0.75 for a clear day, 0.5 for a partly sunny day and 0.25 for a cloudy day. 
+We approximate that a quarter of the grasshopper surface area is in contact with the ground.
+
+<h4>Salamanders</h4>
+<code>TrenchR::Tb_salamander_humid</code> function is used for the calculations.
+The internal skin resistance is set to 4 s/cm and boundary layer resistance to 1 s/cm.
+Saturation vapor pressure of 2.5 kPa and actual vapor pressure of 2.0 kPa are used for this model.
+
+<h4>Butterflies</h4>
+For butterflies, we use <code>TrenchR::Tb_butterfly</code> function.
+Surface temperature in the shade is assumed as 5 °C cooler than the air temperature. Diffuse solar radiation flux is assumed to be half of the direct solar radiation flux regardless of the weather.
+
+<h4>Snails</h4>
+Snails body temperatures are obtained from <code>TrenchR::Tb_snail</code> function.
+Fraction of the sky covered by the cloud is approximated to 0 on a clear day, 0.5 on a partly sunny day and 1 on a cloudy day. Snails water loss rate is ignored for this model. GridMET has no information on the wind sensor height, and therefore is set to 1 m above ground for this model.
+
+<h4>Mussels</h4>
+<code>TrenchR::Tb_mussel</code> function is used to calculate mussel body temperatures.
+Diffuse fraction, which is the proportion of solar radiation that is diffuse, is 0.1 on a clear day, 0.5 on a partly sunny day and 1 on a cloudy day. When gaping, we assume constant mass loss rate of 5% of initial body mass per hour.
