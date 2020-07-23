@@ -2,15 +2,14 @@ source("functions.R", local = TRUE)
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 # if (latest ) {
-  AOI = aoi_get(state = "conus")
-  p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2)
-  r = raster::brick(p)
+AOI = aoi_get(state = "conus")
+p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2)
+r = raster::brick(p)
 #   writeRaster(r, paste0(Sys.Date(), "weather_data"))
 # 
 # }
-
 names(r) = c('tmin', 'tmax', 'wind')
-#param_meta$gridmet
+param_meta$gridmet
 df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
 
 elevData <- raster("elevData.grd")
@@ -107,6 +106,7 @@ shinyServer <- function(input, output, session) {
     } else if (input$species == "Snail") {
       list(
         h4(div(tags$img(src="Snail_icon.png", height = 25), "Snail")),
+        weather,
         numericInput("length", list(icon("ruler"), "Length (mm)"), value = 12)
       )
     } else if (input$species == "Mussel") {
@@ -140,6 +140,9 @@ shinyServer <- function(input, output, session) {
     zenith <- raster(df_raster)
     
     if (input$year != 2020) {
+      validate(
+        need(airTemp(), "")
+      )
       zenith <- resample(zenith, airTemp())
     }
     zenith
@@ -163,6 +166,9 @@ shinyServer <- function(input, output, session) {
     if (input$year == 2020) {
       diurnal_temp_variation_sine(r$tmax - 273.15, r$tmin - 273.15, hour()) + input$offset
     } else {
+      validate(
+        need(input$scenario, "")
+      )
       if (input$scenario == "Optimistic") {
         scn <- 26
       } else if (input$scenario == "Intermediate") {
@@ -170,19 +176,12 @@ shinyServer <- function(input, output, session) {
       } else {
         scn <- 85
       }
+      
       raster(paste0("year", input$year, "/rcp", scn, "/", input$month, ".grd"))
     }
   })
   
-  aug26 <- raster("year2090/rcp26/Aug.grd")
-  aug85 <- raster("year2090/rcp85/Aug.grd")
-  rasterVis::levelplot(aug26)
-  rasterVis::levelplot(aug85)
   bodyTemp <- reactive({
-    validate(
-      need(input$species, "")
-    )
-    
     if (input$year != 2020) {
       r <- resample(r, airTemp())
       elevData <- resample(elevData, airTemp())
@@ -324,7 +323,6 @@ shinyServer <- function(input, output, session) {
     validate(
       need(bodyTemp(), "")
     )
-    
     min <- minValue(bodyTemp())
     max <- maxValue(bodyTemp())
     int <- (max - min) / 5
@@ -359,6 +357,9 @@ shinyServer <- function(input, output, session) {
                     na.color = "transparent"
     )
     
+    validate(
+      need(airTemp(), "")
+    )
     minTa <- round(minValue(airTemp()))
     maxTa <- round(maxValue(airTemp()))
     intTa <- round((maxTa - minTa) / 5)
@@ -370,8 +371,8 @@ shinyServer <- function(input, output, session) {
     
     map <- leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>% 
-      addRasterImage(bodyTemp(), colors = pal, group = "Body temperatures", opacity = 0.6) %>%
-      addRasterImage(airTemp(), colors = pal_air, group = "Air temperatures", opacity = 0.6) %>%
+      addRasterImage(x = bodyTemp(), colors = pal, group = "Body temperatures", opacity = 0.6) %>%
+      addRasterImage(x = airTemp(), colors = pal_air, group = "Air temperatures", opacity = 0.6) %>%
       setView(lng=-98.5795, lat=39.8283, zoom=4) %>%
       addLayersControl(baseGroups = c("Body temperatures", "Air temperatures")) %>%
       addLegend(pal = pal,
