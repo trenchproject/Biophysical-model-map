@@ -41,6 +41,13 @@ shinyUI <-
     br(), 
     hr(),
     radioGroupButtons("options", "gridMET or microclim", choices = c("gridMET", "microclim"), justified = TRUE),
+    p("gridMET uses gridMET to get climate data. Daily maximum and minimum temperatures of the 15th of the 
+      selected month from the past 12 months are used as the 2020 air temperature after converted to daily temperatures.
+      When future years are selected, it uses data obtained from CMIP5 model of that year, and directly uses them as air temperatures."),
+    p("microclim uses the microclim data, which are average monthly temperatures between 1961-1990. When future years
+      are selected, it adds anomaly to those average temperatures, which are the difference between the temperature from
+      the year selected and that from 2020. For the current version, it only uses temperatures at 1pm due to the
+      data storage limit."),
     br(),
     fluidRow(
       column(6, radioGroupButtons("year", "Year", choices = c(2020, 2050, 2070, 2090), status = "success", size = "sm", justified = TRUE))
@@ -54,8 +61,8 @@ shinyUI <-
     sidebarLayout(
       sidebarPanel(
         selectInput("species", list(icon("paw"), "Species"), choices = c("Lizard", "Grasshopper", "Salamander", "Butterfly", "Snail", "Mussel")),
-        selectInput("hour", list(icon("glyphicon glyphicon-time", lib = "glyphicon"), "Hour"), choices = hours, selected = "01 PM"),
         selectInput("monthAll", list(icon("calendar-alt"), "Month"), choices = monthNames),
+        selectInput("hour", list(icon("glyphicon glyphicon-time", lib = "glyphicon"), "Hour"), choices = hours, selected = "01 PM"),
         numericInput("CTmax", list(icon("thermometer-half"), "Critical thermal maximum (°C)"), value = 40),
         materialSwitch("red", status = "danger", label = "Show areas above CTmax in red"),
         hr(),
