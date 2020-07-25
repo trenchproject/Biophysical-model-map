@@ -1,13 +1,13 @@
 [general]
 creator=R package 'raster'
-created=2020-07-17 12:10:54
+created=2020-07-24 15:02:58
 [georeference]
-nrows=194
-ncols=460
-xmin=-124.625
-ymin=25.25
-xmax=-67.125
-ymax=49.5
+nrows=585
+ncols=1384
+xmin=-124.724999966666
+ymin=25.0666666666667
+xmax=-67.0999999666598
+ymax=49.4
 projection=+proj=longlat +ellps=WGS84 +no_defs
 [data]
 datatype=FLT4S
@@ -15,7 +15,7 @@ byteorder=little
 nbands=1
 bandorder=BIL
 categorical=FALSE
-minvalue=-15.3544101715088
+minvalue=-14.8521725151325
 maxvalue=24.6454849243164
 nodatavalue=-3.4e+38
 [legend]

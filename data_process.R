@@ -1,6 +1,7 @@
 library("ncdf4")
 library("sf")
 library("tidyr")
+library("raster")
 
 # Get average monthly temperatures from Downscaled CMIP3 and CMIP5 Climate and Hydrology Projections 
 # (https://gdo-dcp.ucllnl.org/downscaled_cmip_projections/#Welcome)
@@ -42,14 +43,16 @@ shape <- st_read("Igismap/UnitedStates_Boundary.shp")
 
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
+
 AOI = aoi_get(state = "conus")
 p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2)
 
 r = raster::brick(p)
 
 
+#______________________________________________________________________________________
 
-saveRaster <- function(year, month) {
+saveRaster <- function(year) {
   tas <- nc_open(paste0(year, "_tas.nc"))
   vals <- ncvar_get(tas)
   
@@ -58,7 +61,7 @@ saveRaster <- function(year, month) {
       if (scenario == 26) {
         projection = 21
       } else if (scenario == 60) {
-        projection = 26
+        projection = 26 
       } else {
         projection = 31
       }
@@ -80,9 +83,57 @@ saveRaster <- function(year, month) {
   }
 }
 
-saveRaster(2050)
+saveRaster(2070)
 
 rcp26 <- raster("year2050/rcp26/Aug.grd")
 rcp85 <- raster("year2050/rcp85/Aug.grd")
-maxValue(rcp26)
-maxValue(rcp85)
+
+
+#_________________________________________________________________________________________
+
+takeDif <- function(year) {
+  for (scenario in c(26, 60, 85)) {
+    dir.create(paste0("year", year, "dif"))
+    for (month in c(1:12)) {
+      dif <- raster(paste0("year", year, "/rcp", scenario, "/", monthNames[month], ".grd")) - raster(paste0("year2020/rcp", scenario, "/", monthNames[month], ".grd"))
+      dirname <- paste0("year", year, "dif/rcp", scenario)
+      dir.create(dirname)
+      writeRaster(dif, filename = paste0(dirname, "/", monthNames[month]), overwrite = TRUE)
+    }
+  }
+
+}
+
+takeDif(2070)
+
+
+#____________________________________________________________________________________
+
+for(month in 1:12) {
+  filename <- paste0("air_temperature_degC_120cm/TA120cm_", month, ".nc")
+  airbrick <- brick(filename)
+  Ta <- mask(airbrick, shape) %>% resample(r)
+  writeRaster(Ta, paste0("microclim/", monthNames[month]))
+  
+}
+
+air <- nc_open("air_temperature_degC_120cm/TA120cm_1.nc")
+airbrick <- brick("air_temperature_degC_120cm/TA120cm_1.nc")
+Ta <- mask(airbrick, shape) %>% resample(r)
+writeRaster(Ta, "microclim/Jan")
+
+brick("microclim/Jan.grd")
+
+#___________________________________________________________________________________
+
+for (month in 2:12) {
+  filename <- paste0("microclim/", monthNames[month], ".grd")
+  Ta <- brick(filename)
+  airTemp <- Ta[[13]]
+  writeRaster(airTemp, paste0("microclim_short/", monthNames[month]))
+}
+
+airTemp
+
+rasterVis::levelplot(rcp26)
+rasterVis::levelplot(rcp85)

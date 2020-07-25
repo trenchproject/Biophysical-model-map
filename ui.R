@@ -26,6 +26,8 @@ library("AOI")
 
 
 hours <- c("12 AM","01 AM","02 AM","03 AM","04 AM","05 AM","06 AM","07 AM","08 AM","09 AM","10 AM","11 AM","12 PM","01 PM","02 PM","03 PM","04 PM","05 PM","06 PM","07 PM","08 PM","09 PM", "10 PM","11 PM")
+monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
 
 shinyUI <-
   fluidPage(
@@ -35,10 +37,11 @@ shinyUI <-
     titlePanel("Biophysical model map"),
     hr(),
     p("This map shows the operative tempearture of lizards, grasshoppers, salamanders, butterflies, snails and mussels across the United States based on the weather data from 2020 (two days ago), 2050, 2070 or in 2090."),
-    p("The offset value can be used to simulated climate change."),
     includeHTML("intro.html"),
     br(), 
     hr(),
+    radioGroupButtons("options", "gridMET or microclim", choices = c("gridMET", "microclim"), justified = TRUE),
+    br(),
     fluidRow(
       column(6, radioGroupButtons("year", "Year", choices = c(2020, 2050, 2070, 2090), status = "success", size = "sm", justified = TRUE))
     ),
@@ -52,6 +55,7 @@ shinyUI <-
       sidebarPanel(
         selectInput("species", list(icon("paw"), "Species"), choices = c("Lizard", "Grasshopper", "Salamander", "Butterfly", "Snail", "Mussel")),
         selectInput("hour", list(icon("glyphicon glyphicon-time", lib = "glyphicon"), "Hour"), choices = hours, selected = "01 PM"),
+        selectInput("monthAll", list(icon("calendar-alt"), "Month"), choices = monthNames),
         numericInput("CTmax", list(icon("thermometer-half"), "Critical thermal maximum (°C)"), value = 40),
         materialSwitch("red", status = "danger", label = "Show areas above CTmax in red"),
         hr(),
@@ -59,7 +63,7 @@ shinyUI <-
       ),
       
       mainPanel(
-        sliderInput("offset", "Warming offset (°C)", min = -5, max = 5, value = 0, step = 0.5),
+        #sliderInput("offset", "Warming offset (°C)", min = -5, max = 5, value = 0, step = 0.5),
         leafletOutput("mymap") %>% withSpinner(type = 7),
       )
     ),

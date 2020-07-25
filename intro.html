@@ -1,16 +1,19 @@
 <h3>Model description</h3>
 
-This activity uses weather data to predict organism's body tempeartures across the US. Current weather data are obtained through gridMET and include daily maximum, minimum temperatures and wind speed. The temperature data are converted to hourly temperatures by, <code>TrenchR::diurnal_temp_variation_sine</code> function. <br>
+This activity uses weather data to predict organism's body tempeartures across the US. Data of monthly average air temperatures 120cm above ground for every hour were obtained from Kearney et al. (2014). 
+Wind speed data are obtained from gridMET. 
 
-For the future weather data, it obtians monthly average air temperatures from the CMIP5 multimodel ensemble. This gridded projection is based on the Community Climate System Model version 4 assuming representative concentration pathway (RCP) 2.6, 6.0 and 8.5, which correspond to "Optimistic", "Intermediate" and "Pessimistic" estimates respectively.
+
+For the future weather data, it obtians monthly average surface air temperatures from the CMIP5 multimodel ensemble. This gridded projection is based on the Community Climate System Model version 4 assuming representative concentration pathway (RCP) 2.6, 6.0 and 8.5, which correspond to "Optimistic", "Intermediate" and "Pessimistic" estimates respectively.
 These projections represent a greenhouse gas concentration trajectory, all of which can possibly happen in the future.
-RCP2.6 is a pathway where radiative forcing peaks at approximately 3 W/m <sup>2</sup> before 2100 and then declines.
-RCP6.0 is an intermediate stabilisation pathways in which radiative forcing is stabilised at approximately 6.0 W/m <sup>2</sup> after 2100. RCP8.5 is not the most realistic projection, and is considered more as the worst-case climate change scenario. The projection pathways for each scenario are depicted in the graph below.
+RCP2.6 is a pathway where radiative forcing peaks at approximately 3 W/m <sup>2</sup> before 2100 and then declines. RCP6.0 is an intermediate stabilisation pathways in which radiative forcing is stabilised at approximately 6.0 W/m <sup>2</sup> after 2100. RCP8.5 is not the most realistic projection, and is considered more as the worst-case climate change scenario. The projection pathways for each scenario are depicted in the graph below.
 
 <p align='center'>
 <img src="RCP.png" width = "600px"/>
 </p>
 
+<br>
+However, surface temperatures from the CMIP5 model and the air temperatures 120 cm above ground from the microclim cannot be direcly compared. As a result, we obtained the monthly average temperatures from 2014 using the same CMIP5 model and the temperature difference between the 2014 temperatures and the future predicted temperatures were used as anomaly, and were added to the microclim data.
 
 For any biophysical model functions that require ground temperatures, they are assumed to be 5 °C warmer than the air temperatures.
 Elevation data are obtained from NOAA ETOPO1 Global Relief Model, grid-registered ETOPO1 Ice Surface.

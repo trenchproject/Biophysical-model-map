@@ -1,20 +1,40 @@
 source("functions.R", local = TRUE)
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
-# if (latest ) {
 AOI = aoi_get(state = "conus")
-p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2)
-r = raster::brick(p)
-#   writeRaster(r, paste0(Sys.Date(), "weather_data"))
-# 
-# }
-names(r) = c('tmin', 'tmax', 'wind')
-param_meta$gridmet
-df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
 
 elevData <- raster("elevData.grd")
 
+
 shinyServer <- function(input, output, session) {
+  
+  r <- reactive({
+    month <- which(input$monthAll %in% monthNames)
+    
+    if (input$options == "gridMET") {
+      # For gridMET, we need tmax, tmin and wind speed from the specified month, either from this year or last year, whichever that's closer.
+      year = 2020
+      if (which(input$monthAll %in% monthNames) > 7) {
+        year = year - 1
+      }
+      
+      date <- as.Date(paste0(year, "-", month, "-15"))
+      #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = "2020-6-15", endDate = "2020-6-15")
+      
+      p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = date, endDate = date)
+      r = raster::brick(p)
+      names(r) = c('tmin', 'tmax', 'wind')
+      rm(p)
+    } else {
+      # For microclim, we just need the wind speed but from 1990
+      
+      date <- as.Date(paste0("1990-", month, "-15"))
+      p = getGridMET(AOI, param = 'wind_vel', startDate = date, endDate = date)
+      r = raster::brick(p)
+      names(r) = "wind"
+    }
+    r
+  })
   
   hour <- reactive({
     if (input$hour == "12 AM") {
@@ -31,8 +51,8 @@ shinyServer <- function(input, output, session) {
   output$future <- renderUI({
     if(input$year != 2020) {
       fluidRow(
-        column(5, tipify(radioGroupButtons("scenario", "Scenarios", c("Optimistic", "Intermediate", "Pessimistic"), status = "danger", size = "sm", justified = TRUE),"RCP2.6 / RCP6.0 / RCP8.5")),
-        column(4, offset = 1, selectInput("month", "Month", choices = monthNames))
+        column(5, tipify(radioGroupButtons("scenario", "Scenarios", c("Optimistic", "Intermediate", "Pessimistic"), status = "danger", size = "sm", justified = TRUE),"RCP2.6 / RCP6.0 / RCP8.5"))
+        # column(4, offset = 1, selectInput("month", "Month", choices = monthNames))
       )
     }
   })
@@ -120,31 +140,26 @@ shinyServer <- function(input, output, session) {
       )
     }
   })
-  
+
   zenith <- reactive({
     validate(
       need(input$species %in% c("Lizard", "Grasshopper", "Butterfly", "Mussel"), "")
     )
-    if(input$year == 2020) {
-      df$zenith <- zenith_angle(doy = day_of_year(Sys.Date() - 2), lat = df$y, lon = df$x, hour = hour())
-    } else {
-      validate(
-        need(input$month, "")
-      )
-      df$zenith <- zenith_angle(doy = (which(input$month %in% monthNames) - 1) * 30 + 15, lat = df$y, lon = df$x, hour = hour())
-    }
+    df <- rasterToPoints(r()) %>% as.data.frame() %>% dplyr::select("x", "y")
+    
+    df$zenith <- zenith_angle(doy = (which(input$monthAll %in% monthNames) - 1) * 30 + 15, lat = df$y, lon = df$x, hour = hour())
     df_raster <- df
     coordinates(df_raster) <- ~ x + y
     gridded(df_raster) <- TRUE
     crs(df_raster) <- "+proj=longlat +ellps=WGS84 +no_defs"
     zenith <- raster(df_raster)
     
-    if (input$year != 2020) {
-      validate(
-        need(airTemp(), "")
-      )
-      zenith <- resample(zenith, airTemp())
-    }
+    # if (input$year != 2020) {
+    #   validate(
+    #     need(airTemp(), "")
+    #   )
+    #   zenith <- resample(zenith, airTemp())
+    # }
     zenith
   })
   
@@ -163,29 +178,56 @@ shinyServer <- function(input, output, session) {
   })
   
   airTemp <- reactive({
-    if (input$year == 2020) {
-      diurnal_temp_variation_sine(r$tmax - 273.15, r$tmin - 273.15, hour()) + input$offset
-    } else {
-      validate(
-        need(input$scenario, "")
-      )
-      if (input$scenario == "Optimistic") {
-        scn <- 26
-      } else if (input$scenario == "Intermediate") {
-        scn <- 60
+    if (input$options == "gridMET") {
+      if (input$year == 2020) {
+        airTemp <- diurnal_temp_variation_sine(r()$tmax - 273.15, r()$tmin - 273.15, hour())
       } else {
-        scn <- 85
+        validate(need(input$scenario, ""))
+        
+        if (input$scenario == "Optimistic") {
+          scn <- 26
+        } else if (input$scenario == "Intermediate") {
+          scn <- 60
+        } else {
+          scn <- 85
+        }
+        airTemp <- raster(paste0("year", input$year, "/rcp", scn, "/", input$monthAll, ".grd"))
       }
       
-      raster(paste0("year", input$year, "/rcp", scn, "/", input$month, ".grd"))
+    } else if (input$options == "microclim") {
+      # filename <- paste0("microclim/", input$monthAll, ".grd")
+      # Ta <- brick(filename)
+      # airTemp <- Ta[[hour()]]
+      
+      filename <- paste0("microclim_short/", input$monthAll, ".grd")
+      airTemp <- raster(filename)
+      
+      if (input$year != 2020) {
+        validate(
+          need(input$scenario, "")
+        )
+        if (input$scenario == "Optimistic") {
+          scn <- 26
+        } else if (input$scenario == "Intermediate") {
+          scn <- 60
+        } else {
+          scn <- 85
+        }
+        
+        yearfile <- paste0("year", input$year, "dif/rcp", scn, "/", input$monthAll, ".grd")
+        # dif <- resample(raster(yearfile), Ta)
+        airTemp <- airTemp + raster(yearfile)
+      }
     }
+    airTemp
   })
   
   bodyTemp <- reactive({
-    if (input$year != 2020) {
-      r <- resample(r, airTemp())
-      elevData <- resample(elevData, airTemp())
-    }
+    # if (input$year != 2020) {
+    #   r <- resample(r, airTemp())
+    #   elevData <- resample(elevData, airTemp())
+    # }
+    airTemp <- resample(airTemp(), elevData)
     
     if (input$species %in% c("Grasshopper", "Butterfly", "Salamander", "Snail", "Mussel")) {
       validate(
@@ -219,9 +261,9 @@ shinyServer <- function(input, output, session) {
       
       surface <- ifelse(input$loc == "Ground", TRUE, FALSE)
 
-      Tb <- Tb_lizard(T_a = airTemp(),
-                      T_g = airTemp() + 5,
-                      u = r$wind, 
+      Tb <- Tb_lizard(T_a = airTemp,
+                      T_g = airTemp + 5,
+                      u = r()$wind, 
                       svl = input$svl, 
                       m = input$mass, 
                       psi = zenith(),
@@ -242,7 +284,7 @@ shinyServer <- function(input, output, session) {
       
       Tb <- Tb_grasshopper(T_a = airTemp(), 
                            T_g = airTemp() + 5, 
-                           u = r$wind, 
+                           u = r()$wind, 
                            H = rad, 
                            K_t = kt, 
                            psi = zenith(), 
@@ -276,7 +318,7 @@ shinyServer <- function(input, output, session) {
       Tb <- Tb_butterfly(T_a = airTemp(),
                          Tg = airTemp() + 5,
                          Tg_sh = airTemp() - 5, 
-                         u = r$wind, 
+                         u = r()$wind, 
                          H_sdir = rad,
                          H_sdif = rad / 2,
                          z = zenith(),
@@ -292,7 +334,7 @@ shinyServer <- function(input, output, session) {
       Tb <- Tb_snail(temp = airTemp(), 
                      Len = 12 / 1000, # in m
                      solar = rad,
-                     WS = r$wind,
+                     WS = r()$wind,
                      CC = CC,
                      WL = 0,
                      WSH = 1
@@ -308,7 +350,7 @@ shinyServer <- function(input, output, session) {
                       T_g = airTemp() + 5,
                       S = rad,
                       k_d = k_d,
-                      u = r$wind,
+                      u = r()$wind,
                       psi = zenith(),
                       evap = input$gape,
                       cl = CC,
@@ -445,15 +487,13 @@ shinyServer <- function(input, output, session) {
     }
   })
   
-  observeEvent(input$year, {
-    if (input$year != 2020) {
-      hide("hour")
-      hide("offset")
-    } else {
-      show("hour")
-      show("offset")
-    }
-  })
+  # observeEvent(input$year, {
+  #   if (input$options != "gridMET" || input$year == 2020) {
+  #     hide("offset")
+  #   } else {
+  #     show("offset")
+  #   }
+  # })
 }
 
 
