@@ -36,18 +36,12 @@ shinyUI <-
     useShinyjs(),
     titlePanel("Biophysical model map"),
     hr(),
-    p("This map shows the operative tempearture of lizards, grasshoppers, salamanders, butterflies, snails and mussels across the United States based on the weather data from 2020 (two days ago), 2050, 2070 or in 2090."),
+    p("This map displays the operative tempearture of lizards, grasshoppers, salamanders, butterflies, snails and mussels across the United States for 2020, and for 2050, 2070 and 2090 using a future temperature projection model."),
     includeHTML("intro.html"),
     br(), 
     hr(),
     radioGroupButtons("options", "gridMET or microclim", choices = c("gridMET", "microclim"), justified = TRUE),
-    p("gridMET uses gridMET to get climate data. Daily maximum and minimum temperatures of the 15th of the 
-      selected month from the past 12 months are used as the 2020 air temperature after converted to daily temperatures.
-      When future years are selected, it uses data obtained from CMIP5 model of that year, and directly uses them as air temperatures."),
-    p("microclim uses the microclim data, which are average monthly temperatures between 1961-1990. When future years
-      are selected, it adds anomaly to those average temperatures, which are the difference between the temperature from
-      the year selected and that from 2020. For the current version, it only uses temperatures at 1pm due to the
-      data storage limit."),
+
     br(),
     fluidRow(
       column(6, radioGroupButtons("year", "Year", choices = c(2020, 2050, 2070, 2090), status = "success", size = "sm", justified = TRUE))

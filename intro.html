@@ -1,25 +1,31 @@
 <h3>Model description</h3>
 
-This activity uses weather data to predict organism's body tempeartures across the US. Data of monthly average air temperatures 120cm above ground for every hour were obtained from Kearney et al. (2014). 
-Wind speed data are obtained from gridMET. 
+This activity uses weather data to predict organism's body tempeartures across the US. Two separate methods are used to project future temperatures. 
+
+<h4>gridMET</h4>
+gridMET uses, <code>getGridMET</code>, from the climateR package to get daily maximum and minimum temperatures of the 15th of the selected month from the past 12 months. Those maximum and minimum temperatures are converted to hourly temperatures and are used when 2020 is selected. When a future year is selected, it adds anomaly to those average temperatures. The anomaly is calculated using the CMIP5 model, and it is the temperature difference between the year selected and 2020. The upside of this method is that it uses data from 2020. The downside is that it is based on just one day and is not very reliable for it to represent the whole month, and the runtime takes a little longer since it obtains data every time it runs. 
+
+<h4>microclim</h4>
+microclim uses the microclimate data from Kearney (2014), which are average monthly air temperatures between 1961-1990 120cm above ground for every hour, and the data are used when 2020 is selected. When future years are selected, it adds the same anomaly as in the gridMET method to those average temperatures. For the current version, it only works for temperatures at 1pm due to the data storage limit. The upside is that the data are more reliable since it's an average temperature across 30 years, and runs a little faster. The downside is that the data are a little outdated, and the actual temperatures can be greatly different from 1990. The data files are larger in size as well due to the fact that it has to be pre-saved.
 
 
+In both cases, we use anomaly due to the fact that surface temperatures from the CMIP5 model and the air temperatures from gridMET or microclim cannot be direcly compared. Wind speed data are obtained from <code>climateR::getGridMET</code> for both cases. 
+
+<h4>CMIP5 model</h4>
 For the future weather data, it obtians monthly average surface air temperatures from the CMIP5 multimodel ensemble. This gridded projection is based on the Community Climate System Model version 4 assuming representative concentration pathway (RCP) 2.6, 6.0 and 8.5, which correspond to "Optimistic", "Intermediate" and "Pessimistic" estimates respectively.
-These projections represent a greenhouse gas concentration trajectory, all of which can possibly happen in the future.
-RCP2.6 is a pathway where radiative forcing peaks at approximately 3 W/m <sup>2</sup> before 2100 and then declines. RCP6.0 is an intermediate stabilisation pathways in which radiative forcing is stabilised at approximately 6.0 W/m <sup>2</sup> after 2100. RCP8.5 is not the most realistic projection, and is considered more as the worst-case climate change scenario. The projection pathways for each scenario are depicted in the graph below.
+These projections represent a greenhouse gas concentration trajectory, all of which can possibly happen in the future. The projection pathways for each scenario are depicted in the graph below. 
+RCP2.6 is a stringent mitigation pathway in which radiative forcing peaks at approximately 3 W/m <sup>2</sup> before 2100 and then declines. It is characterized by substantial net negative emissions by 2100. RCP6.0 is an intermediate stabilisation pathways in which radiative forcing is stabilised at approximately 6.0 W/m <sup>2</sup> after 2100. RCP8.5 is not the most realistic projection, and is considered more as the worst-case climate change scenario. Nearly ice-free Arctic Ocean in September is likely for RCP8.5 before mid-century. 
 
 <p align='center'>
 <img src="RCP.png" width = "600px"/>
 </p>
 
-<br>
-However, surface temperatures from the CMIP5 model and the air temperatures 120 cm above ground from the microclim cannot be direcly compared. As a result, we obtained the monthly average temperatures from 2014 using the same CMIP5 model and the temperature difference between the 2014 temperatures and the future predicted temperatures were used as anomaly, and were added to the microclim data.
+This model provides us with data from 2020 as well, and the anomaly is produced from the difference between the 2020 data and the future data.
 
-For any biophysical model functions that require ground temperatures, they are assumed to be 5 °C warmer than the air temperatures.
-Elevation data are obtained from NOAA ETOPO1 Global Relief Model, grid-registered ETOPO1 Ice Surface.
-Zenith angle was calculated using <code>TrenchR::zenith_angle</code> function for each point on the map by the longitude, latitude and the day of the year.
-Surface albedo is set to be 0.25 for grass, 0.1 for dark soil and 0.75 for snow surface as listed in Campbell & Norman (1997).
-Radiation is estimated as 900 W/m <sup>2</sup>, 500 W/m <sup>2</sup> and 200 W/m <sup>2</sup> for a clear day, a partly sunny day and a cloudy day respectively. <br>
+<br>
+<h4>Biophysical models</h4>
+We use different biophysical models for each animal, all of which are from the TrenchR package.
+<br>
 <br>
 <b>Lizards</b>: Lizard body temperatures are calculated based on <code>TrenchR::Tb_lizard</code> function. Lizard solar absorptivity and thermal absoptivity are set to 0.9 and 0.965, respectively. View factors between the surface of the lizard and diffuse solar radiation, reflected solar radiation, atmospheric radiation and ground thermal radation are all 0.5, assuming that the lizards are flat on the ground for simplification.
 <br>
@@ -43,4 +49,11 @@ Fraction of the sky covered by the cloud is approximated to 0 on a clear day, 0.
 <br>
 <br>
 <b>Mussels</b>: <code>TrenchR::Tb_mussel</code> function is used to calculate mussel body temperatures.
-Diffuse fraction, which is the proportion of solar radiation that is diffuse, is 0.1 on a clear day, 0.5 on a partly sunny day and 1 on a cloudy day. When gaping, we assume constant mass loss rate of 5% of initial body mass per hour.
+Diffuse fraction, which is the proportion of solar radiation that is diffuse, is 0.1 on a clear day, 0.5 on a partly sunny day and 1 on a cloudy day. When gaping, we assume constant mass loss rate of 5% of initial body mass per hour. 
+<br>
+<br>
+<b>Other data</b>: Elevation data are obtained from NOAA ETOPO1 Global Relief Model, grid-registered ETOPO1 Ice Surface.
+Zenith angle was calculated using <code>TrenchR::zenith_angle</code> function for each point on the map by the longitude, latitude and the day of the year.
+For any functions that require ground temperatures, they are assumed to be 5 °C warmer than the air temperatures.
+Surface albedo is set to be 0.25 for grass, 0.1 for dark soil and 0.75 for snow surface as listed in Campbell & Norman (1997).
+Radiation is estimated as 900 W/m <sup>2</sup>, 500 W/m <sup>2</sup> and 200 W/m <sup>2</sup> for a clear day, a partly sunny day and a cloudy day respectively. <br>

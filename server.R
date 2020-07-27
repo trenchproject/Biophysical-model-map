@@ -179,9 +179,9 @@ shinyServer <- function(input, output, session) {
   
   airTemp <- reactive({
     if (input$options == "gridMET") {
-      if (input$year == 2020) {
-        airTemp <- diurnal_temp_variation_sine(r()$tmax - 273.15, r()$tmin - 273.15, hour())
-      } else {
+      
+      airTemp <- diurnal_temp_variation_sine(r()$tmax - 273.15, r()$tmin - 273.15, hour())
+      if (input$year != 2020) {
         validate(need(input$scenario, ""))
         
         if (input$scenario == "Optimistic") {
@@ -191,7 +191,7 @@ shinyServer <- function(input, output, session) {
         } else {
           scn <- 85
         }
-        airTemp <- raster(paste0("year", input$year, "/rcp", scn, "/", input$monthAll, ".grd"))
+        airTemp <- airTemp + raster(paste0("year", input$year, "dif/rcp", scn, "/", input$monthAll, ".grd"))
       }
       
     } else if (input$options == "microclim") {
