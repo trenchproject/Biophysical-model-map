@@ -13,15 +13,16 @@ shinyServer <- function(input, output, session) {
     
     if (input$options == "gridMET") {
       # For gridMET, we need tmax, tmin and wind speed from the specified month, either from this year or last year, whichever that's closer.
-      year = 2020
-      if (which(input$monthAll %in% monthNames) > 7) {
-        year = year - 1
-      }
-      
-      date <- as.Date(paste0(year, "-", month, "-15"))
+      # year = 2020
+      # if (which(input$monthAll %in% monthNames) > 7) {
+      #   year = year - 1
+      # }
+      # 
+      # date <- as.Date(paste0(year, "-", month, "-15"))
       #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = "2020-6-15", endDate = "2020-6-15")
       
-      p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = date, endDate = date)
+      #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = date, endDate = date)
+      p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2, endDate = Sys.Date() - 2)
       r = raster::brick(p)
       names(r) = c('tmin', 'tmax', 'wind')
       rm(p)
@@ -49,7 +50,7 @@ shinyServer <- function(input, output, session) {
   })
   
   output$future <- renderUI({
-    if(input$year != 2020) {
+    if(input$year != "recent") {
       fluidRow(
         column(5, tipify(radioGroupButtons("scenario", "Scenarios", c("Optimistic", "Intermediate", "Pessimistic"), status = "danger", size = "sm", justified = TRUE),"RCP2.6 / RCP6.0 / RCP8.5"))
         # column(4, offset = 1, selectInput("month", "Month", choices = monthNames))
@@ -181,7 +182,7 @@ shinyServer <- function(input, output, session) {
     if (input$options == "gridMET") {
       
       airTemp <- diurnal_temp_variation_sine(r()$tmax - 273.15, r()$tmin - 273.15, hour())
-      if (input$year != 2020) {
+      if (input$year != "recent") {
         validate(need(input$scenario, ""))
         
         if (input$scenario == "Optimistic") {
@@ -202,7 +203,7 @@ shinyServer <- function(input, output, session) {
       filename <- paste0("microclim_short/", input$monthAll, ".grd")
       airTemp <- raster(filename)
       
-      if (input$year != 2020) {
+      if (input$year != "recent") {
         validate(
           need(input$scenario, "")
         )
@@ -487,13 +488,22 @@ shinyServer <- function(input, output, session) {
     }
   })
   
-  # observeEvent(input$year, {
-  #   if (input$options != "gridMET" || input$year == 2020) {
-  #     hide("offset")
-  #   } else {
-  #     show("offset")
-  #   }
-  # })
+  observeEvent(input$year, {
+    if (input$options == "gridMET" && input$year == "recent") {
+      hide("monthAll")
+    } else {
+      show("monthAll")
+    }
+  })
+  
+  observe({
+    if (input$options == "gridMET") {
+      choices = c("recent", 2050, 2070, 2090)
+    } else {
+      choices = c("normals" = "recent", 2050, 2070, 2090)
+    }
+    updateRadioGroupButtons(session, "year", choices = choices, status = "success", size = "sm")
+  })
 }
 
 

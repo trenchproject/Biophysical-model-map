@@ -25,7 +25,7 @@ max(temperature[,,8,1], na.rm = TRUE)
 # temperature (longitude, latitude, months, projections)
 # longitude: 1 - 460
 #            235.4375 - 292.8125
-# equivalent to -24.5625 - -67.1875
+# equivalent to -124.5625 - -67.1875
 
 # latitude: 1 - 194
 #           25.3125 - 49.4375

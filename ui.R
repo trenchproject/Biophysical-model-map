@@ -44,7 +44,7 @@ shinyUI <-
 
     br(),
     fluidRow(
-      column(6, radioGroupButtons("year", "Year", choices = c(2020, 2050, 2070, 2090), status = "success", size = "sm", justified = TRUE))
+      column(6, radioGroupButtons("year", "Year", choices = c("recent", 2050, 2070, 2090), status = "success", size = "sm", justified = TRUE))
     ),
     uiOutput(outputId = "future"),
     # fluidRow(
