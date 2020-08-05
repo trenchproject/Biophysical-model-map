@@ -2,40 +2,43 @@ source("functions.R", local = TRUE)
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 AOI = aoi_get(state = "conus")
-
+x = 3
 elevData <- raster("elevData.grd")
+p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - x, endDate = Sys.Date() - x)
+r = raster::brick(p)
+names(r) = c('tmin', 'tmax', 'wind')
 
 
 shinyServer <- function(input, output, session) {
   
-  r <- reactive({
-    month <- which(input$monthAll %in% monthNames)
-    
-    if (input$options == "gridMET") {
-      # For gridMET, we need tmax, tmin and wind speed from the specified month, either from this year or last year, whichever that's closer.
-      # year = 2020
-      # if (which(input$monthAll %in% monthNames) > 7) {
-      #   year = year - 1
-      # }
-      # 
-      # date <- as.Date(paste0(year, "-", month, "-15"))
-      #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = "2020-6-15", endDate = "2020-6-15")
-      
-      #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = date, endDate = date)
-      p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2, endDate = Sys.Date() - 2)
-      r = raster::brick(p)
-      names(r) = c('tmin', 'tmax', 'wind')
-      rm(p)
-    } else {
-      # For microclim, we just need the wind speed but from 1990
-      
-      date <- as.Date(paste0("1990-", month, "-15"))
-      p = getGridMET(AOI, param = 'wind_vel', startDate = date, endDate = date)
-      r = raster::brick(p)
-      names(r) = "wind"
-    }
-    r
-  })
+  # r <- reactive({
+  #   # month <- which(input$monthAll %in% monthNames)
+  #   
+  #   # if (input$options == "gridMET") {
+  #     # For gridMET, we need tmax, tmin and wind speed from the specified month, either from this year or last year, whichever that's closer.
+  #     # year = 2020
+  #     # if (which(input$monthAll %in% monthNames) > 7) {
+  #     #   year = year - 1
+  #     # }
+  #     # 
+  #     # date <- as.Date(paste0(year, "-", month, "-15"))
+  #     #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = "2020-6-15", endDate = "2020-6-15")
+  #     
+  #     #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = date, endDate = date)
+  #     p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2, endDate = Sys.Date() - 2)
+  #     r = raster::brick(p)
+  #     names(r) = c('tmin', 'tmax', 'wind')
+  #     rm(p)
+  #   # } else {
+  #   #   # For microclim, we just need the wind speed but from 1990
+  #   #   
+  #   #   date <- as.Date(paste0("1990-", month, "-15"))
+  #   #   p = getGridMET(AOI, param = 'wind_vel', startDate = date, endDate = date)
+  #   #   r = raster::brick(p)
+  #   #   names(r) = "wind"
+  #   # }
+  #   r
+  # })
   
   hour <- reactive({
     if (input$hour == "12 AM") {
@@ -146,9 +149,10 @@ shinyServer <- function(input, output, session) {
     validate(
       need(input$species %in% c("Lizard", "Grasshopper", "Butterfly", "Mussel"), "")
     )
-    df <- rasterToPoints(r()) %>% as.data.frame() %>% dplyr::select("x", "y")
+    df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
     
-    df$zenith <- zenith_angle(doy = (which(input$monthAll %in% monthNames) - 1) * 30 + 15, lat = df$y, lon = df$x, hour = hour())
+    #df$zenith <- zenith_angle(doy = (which(input$monthAll %in% monthNames) - 1) * 30 + 15, lat = df$y, lon = df$x, hour = hour())
+    df$zenith <- zenith_angle(doy = day_of_year(Sys.Date() - x), lat = df$y, lon = df$x, hour = hour())
     df_raster <- df
     coordinates(df_raster) <- ~ x + y
     gridded(df_raster) <- TRUE
@@ -179,9 +183,11 @@ shinyServer <- function(input, output, session) {
   })
   
   airTemp <- reactive({
-    if (input$options == "gridMET") {
+    month <- monthNames[as.numeric(strsplit(x = as.character(Sys.Date() - x), split = "-")[[1]][2])]
+
+    # if (input$options == "gridMET") {
       
-      airTemp <- diurnal_temp_variation_sine(r()$tmax - 273.15, r()$tmin - 273.15, hour())
+      airTemp <- diurnal_temp_variation_sine(r$tmax - 273.15, r$tmin - 273.15, hour())
       if (input$year != "recent") {
         validate(need(input$scenario, ""))
         
@@ -192,34 +198,34 @@ shinyServer <- function(input, output, session) {
         } else {
           scn <- 85
         }
-        airTemp <- airTemp + raster(paste0("year", input$year, "dif/rcp", scn, "/", input$monthAll, ".grd"))
+        airTemp <- airTemp + raster(paste0("year", input$year, "dif/rcp", scn, "/", month, ".grd"))
       }
       
-    } else if (input$options == "microclim") {
-      # filename <- paste0("microclim/", input$monthAll, ".grd")
-      # Ta <- brick(filename)
-      # airTemp <- Ta[[hour()]]
-      
-      filename <- paste0("microclim_short/", input$monthAll, ".grd")
-      airTemp <- raster(filename)
-      
-      if (input$year != "recent") {
-        validate(
-          need(input$scenario, "")
-        )
-        if (input$scenario == "Optimistic") {
-          scn <- 26
-        } else if (input$scenario == "Intermediate") {
-          scn <- 60
-        } else {
-          scn <- 85
-        }
-        
-        yearfile <- paste0("year", input$year, "dif/rcp", scn, "/", input$monthAll, ".grd")
-        # dif <- resample(raster(yearfile), Ta)
-        airTemp <- airTemp + raster(yearfile)
-      }
-    }
+    # } else if (input$options == "microclim") {
+    #   # filename <- paste0("microclim/", input$monthAll, ".grd")
+    #   # Ta <- brick(filename)
+    #   # airTemp <- Ta[[hour()]]
+    #   
+    #   filename <- paste0("microclim_short/", input$monthAll, ".grd")
+    #   airTemp <- raster(filename)
+    #   
+    #   if (input$year != "recent") {
+    #     validate(
+    #       need(input$scenario, "")
+    #     )
+    #     if (input$scenario == "Optimistic") {
+    #       scn <- 26
+    #     } else if (input$scenario == "Intermediate") {
+    #       scn <- 60
+    #     } else {
+    #       scn <- 85
+    #     }
+    #     
+    #     yearfile <- paste0("year", input$year, "dif/rcp", scn, "/", input$monthAll, ".grd")
+    #     # dif <- resample(raster(yearfile), Ta)
+    #     airTemp <- airTemp + raster(yearfile)
+    #   }
+    # }
     airTemp
   })
   
@@ -264,13 +270,13 @@ shinyServer <- function(input, output, session) {
 
       Tb <- Tb_lizard(T_a = airTemp,
                       T_g = airTemp + 5,
-                      u = r()$wind, 
+                      u = r$wind, 
                       svl = input$svl, 
                       m = input$mass, 
                       psi = zenith(),
                       rho_S = albedo(), 
                       elev = elevData, 
-                      doy = day_of_year(Sys.Date()), 
+                      doy = day_of_year(Sys.Date() - x), 
                       sun = sun, 
                       surface = surface,
                       alpha_S = 0.9,
@@ -285,7 +291,7 @@ shinyServer <- function(input, output, session) {
       
       Tb <- Tb_grasshopper(T_a = airTemp(), 
                            T_g = airTemp() + 5, 
-                           u = r()$wind, 
+                           u = r$wind, 
                            H = rad, 
                            K_t = kt, 
                            psi = zenith(), 
@@ -319,7 +325,7 @@ shinyServer <- function(input, output, session) {
       Tb <- Tb_butterfly(T_a = airTemp(),
                          Tg = airTemp() + 5,
                          Tg_sh = airTemp() - 5, 
-                         u = r()$wind, 
+                         u = r$wind, 
                          H_sdir = rad,
                          H_sdif = rad / 2,
                          z = zenith(),
@@ -335,7 +341,7 @@ shinyServer <- function(input, output, session) {
       Tb <- Tb_snail(temp = airTemp(), 
                      Len = 12 / 1000, # in m
                      solar = rad,
-                     WS = r()$wind,
+                     WS = r$wind,
                      CC = CC,
                      WL = 0,
                      WSH = 1
@@ -351,7 +357,7 @@ shinyServer <- function(input, output, session) {
                       T_g = airTemp() + 5,
                       S = rad,
                       k_d = k_d,
-                      u = r()$wind,
+                      u = r$wind,
                       psi = zenith(),
                       evap = input$gape,
                       cl = CC,
@@ -488,22 +494,22 @@ shinyServer <- function(input, output, session) {
     }
   })
   
-  observeEvent(input$year, {
-    if (input$options == "gridMET" && input$year == "recent") {
-      hide("monthAll")
-    } else {
-      show("monthAll")
-    }
-  })
+  # observeEvent(input$year, {
+  #   if (input$options == "gridMET" && input$year == "recent") {
+  #     hide("monthAll")
+  #   } else {
+  #     show("monthAll")
+  #   }
+  # })
   
-  observe({
-    if (input$options == "gridMET") {
-      choices = c("recent", 2050, 2070, 2090)
-    } else {
-      choices = c("normals" = "recent", 2050, 2070, 2090)
-    }
-    updateRadioGroupButtons(session, "year", choices = choices, status = "success", size = "sm")
-  })
+  # observe({
+  #   if (input$options == "gridMET") {
+  #     choices = c("recent", 2050, 2070, 2090)
+  #   } else {
+  #     choices = c("normals" = "recent", 2050, 2070, 2090)
+  #   }
+  #   updateRadioGroupButtons(session, "year", choices = choices, status = "success", size = "sm")
+  # })
 }
 
 

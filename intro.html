@@ -1,12 +1,6 @@
 <h3>Model description</h3>
 
-This activity uses weather data to predict organism's body tempeartures across the US. Two separate methods are used to project future temperatures. 
-
-<h4>gridMET</h4>
-"gridMET" method uses <code>getGridMET</code> function from the climateR package to get daily maximum and minimum temperatures from two days ago, which is the most recent data available. Those maximum and minimum temperatures are converted to hourly temperatures and are used when "recent" is selected. When a future year is selected, it adds anomaly to those average temperatures. The anomaly is calculated using the CMIP5 model, and it is the temperature difference between the year selected and 2020. The upside of this method is that it uses recent data. The downside is that the current weather temperatures are based on just one day and are not very reliable to represent the whole year, and the runtime takes a little longer since it obtains data every time it runs. 
-
-<h4>microclim</h4>
-"microclim" uses the microclimate data from Kearney (2014), which are average monthly air temperatures between 1961-1990 120cm above ground for every hour, and the data are used when "normals" is selected. When future years are selected, it adds the same anomaly as in the gridMET method to those average temperatures. For the current version, it only works for temperatures at 1pm due to the data storage limit. The upside is that the data are more reliable since it's an average temperature across 30 years, and runs a little faster. The downside is that the data are a little outdated, and the actual temperatures in 2020 can be different from 1990. The data size is also larger since it has to be pre-saved.
+This activity uses weather data to predict organism's body tempeartures across the US using <code>getGridMET</code> function from the climateR package. It obtains daily maximum and minimum temperatures from two days ago, which is the most recent data available. Those maximum and minimum temperatures are converted to hourly temperatures and are used when "recent" is selected. When a future year is selected, it adds anomaly to those average temperatures. The anomaly is calculated using the CMIP5 model, and it is the temperature difference between the year selected and 2020. The upside of this method is that it uses recent data. The downside is that the current weather temperatures are based on just one day and are not very reliable to represent the whole year, and the runtime takes a little longer since it obtains data every time it runs. 
 
 <br>
 <br>

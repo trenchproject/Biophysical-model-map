@@ -230,6 +230,7 @@ diurnal_temp_variation_sine=function(T_max, T_min, t){
   return(T)
 }
 
+
 Tb_butterfly=function(T_a, Tg, Tg_sh, u, H_sdir, H_sdif, z, D, delta, alpha, r_g=0.3, shade=FALSE){
 
   TaK= T_a+273.15 #ambient temperature in K

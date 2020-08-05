@@ -38,9 +38,9 @@ shinyUI <-
     hr(),
     p("This map displays the operative tempearture of lizards, grasshoppers, salamanders, butterflies, snails and mussels across the United States for 2020, and for 2050, 2070 and 2090 using a future temperature projection model."),
     includeHTML("intro.html"),
-    br(), 
-    hr(),
-    radioGroupButtons("options", "gridMET or microclim", choices = c("gridMET", "microclim"), justified = TRUE),
+    # br(), 
+    # hr(),
+    # radioGroupButtons("options", "gridMET or microclim", choices = c("gridMET", "microclim"), justified = TRUE),
 
     br(),
     fluidRow(
@@ -55,7 +55,7 @@ shinyUI <-
     sidebarLayout(
       sidebarPanel(
         selectInput("species", list(icon("paw"), "Species"), choices = c("Lizard", "Grasshopper", "Salamander", "Butterfly", "Snail", "Mussel")),
-        selectInput("monthAll", list(icon("calendar-alt"), "Month"), choices = monthNames),
+        #selectInput("monthAll", list(icon("calendar-alt"), "Month"), choices = monthNames),
         selectInput("hour", list(icon("glyphicon glyphicon-time", lib = "glyphicon"), "Hour"), choices = hours, selected = "01 PM"),
         numericInput("CTmax", list(icon("thermometer-half"), "Critical thermal maximum (°C)"), value = 40),
         materialSwitch("red", status = "danger", label = "Show areas above CTmax in red"),
