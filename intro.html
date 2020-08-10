@@ -1,50 +1,51 @@
 <h3>Model description</h3>
 
-This activity uses weather data to predict organism's body tempeartures across the US using <code>getGridMET</code> function from the climateR package. It obtains daily maximum and minimum temperatures from two days ago, which is the most recent data available. Those maximum and minimum temperatures are converted to hourly temperatures and are used when "recent" is selected. When a future year is selected, it adds anomaly to those average temperatures. The anomaly is calculated using the CMIP5 model, and it is the temperature difference between the year selected and 2020. The upside of this method is that it uses recent data. The downside is that the current weather temperatures are based on just one day and are not very reliable to represent the whole year, and the runtime takes a little longer since it obtains data every time it runs. 
+This activity uses weather data to predict organism's body tempeartures across the US. We use <code>getGridMET</code> function from the climateR package, which obtains the most recent daily maximum and minimum temperature data available. The maximum and minimum temperatures are converted to hourly temperatures by <code>TrenchR::diurnal_temp_variation_sine</code> function, which is used as a baseline for the 2020 data. 
+<br>
+<br>
+When a future year is selected, it adds some "anomaly" to this baseline temperatures, which is an offset value of how much warmer the air temperature is predicted to be in the future. We use the CMIP5 model - which is explained in detail below - to calculate this anomaly. We obtain the temperature data from the model for 2020, 2050, 2070 and 2090, and the temperature difference between 2020 and the year selected is used as anomaly. 
+We chose to use gridMET data for 2020 instead of the CMIP5 model since gridMET data are actually measured temperatures unlike the CMIP5 model data that are predicted temperatures. We employ anomaly and add it to 2020 gridMET data instead of directly using temperature data from the model because CMIP5 model predicts surface temperatures as opposed to the gridMET measuring air temperatures, which cannot be direcly compared. 
 
-<br>
-<br>
-In both cases, we use anomaly because surface temperatures from the CMIP5 model and the air temperatures from gridMET or microclim cannot be direcly compared. Wind speed data are obtained from <code>climateR::getGridMET</code> for both cases. 
+Wind speed data are obtained from gridMET as well.
 
 <h4>CMIP5 model</h4>
 For the future weather data, it obtians monthly average surface air temperatures from the CMIP5 multimodel ensemble. This gridded projection is based on the Community Climate System Model version 4 assuming representative concentration pathway (RCP) 2.6, 6.0 and 8.5, which correspond to "Optimistic", "Intermediate" and "Pessimistic" estimates respectively.
 These projections represent a greenhouse gas concentration trajectory, all of which can possibly happen in the future. The projection pathways for each scenario are depicted in the graph below. 
 RCP2.6 is a stringent mitigation pathway in which radiative forcing peaks at approximately 3 W/m <sup>2</sup> before 2100 and then declines. It is characterized by substantial net negative emissions by 2100. RCP6.0 is an intermediate stabilisation pathways in which radiative forcing is stabilised at approximately 6.0 W/m <sup>2</sup> after 2100. RCP8.5 is not the most realistic projection, and is considered more as the worst-case climate change scenario. Nearly ice-free Arctic Ocean in September is likely for RCP8.5 before mid-century. 
+<br>
 
 <p align='center'>
 <img src="RCP.png" width = "600px"/>
 </p>
 
-This model provides us with data from 2020 as well, and the anomaly is produced from the difference between the 2020 data and the future data.
-
 <br>
 <h4>Biophysical models</h4>
-We use different biophysical models for each animal, all of which are from the TrenchR package.
+We use different biophysical models for each animal, all of which are from TrenchR package.
 <br>
 <br>
-<b>Lizards</b>: Lizard body temperatures are calculated based on <code>TrenchR::Tb_lizard</code> function. Lizard solar absorptivity and thermal absoptivity are set to 0.9 and 0.965, respectively. View factors between the surface of the lizard and diffuse solar radiation, reflected solar radiation, atmospheric radiation and ground thermal radation are all 0.5, assuming that the lizards are flat on the ground for simplification.
+<b>Lizards</b>: Lizard body temperatures are calculated based on <code>Tb_lizard</code> function. Lizard solar absorptivity and thermal absoptivity are set to 0.9 and 0.965, respectively. View factors between the surface of the lizard and diffuse solar radiation, reflected solar radiation, atmospheric radiation and ground thermal radation are all 0.5, assuming that the lizards are flat on the ground for simplification.
 <br>
 <br>
-<b>Grasshoppers</b>: Grasshopper body temperatures are computed using <code>TrenchR::Tb_grasshopper</code> function.
+<b>Grasshoppers</b>: Grasshopper body temperatures are computed using <code>Tb_grasshopper</code> function.
 Clearness index is approximated to 0.75 for a clear day, 0.5 for a partly sunny day and 0.25 for a cloudy day. 
 We approximate that a quarter of the grasshopper surface area is in contact with the ground.
 <br>
 <br>
-<b>Salamanders</b>: <code>TrenchR::Tb_salamander_humid</code> function is used for the calculations.
+<b>Salamanders</b>: <code>Tb_salamander_humid</code> function is used for the calculations.
 The internal skin resistance is set to 4 s/cm and boundary layer resistance to 1 s/cm.
 Saturation vapor pressure of 2.5 kPa and actual vapor pressure of 2.0 kPa are used for this model.
 <br>
 <br>
-<b>Butterflies</b>: For butterflies, we use <code>TrenchR::Tb_butterfly</code> function.
-Surface temperature in the shade is assumed as 5 °C cooler than the air temperature. Diffuse solar radiation flux is assumed to be half of the direct solar radiation flux regardless of the weather.
+<b>Butterflies</b>: For butterflies, we use <code>Tb_butterfly</code> function.
+Surface temperature in the shade is assumed to be 5 °C cooler than the air temperature. Diffuse solar radiation flux is assumed to be half of the direct solar radiation flux regardless of the weather.
 <br>
 <br>
-<b>Snails</b>: Snails body temperatures are obtained from <code>TrenchR::Tb_snail</code> function.
+<b>Snails</b>: Snails body temperatures are obtained from <code>Tb_snail</code> function.
 Fraction of the sky covered by the cloud is approximated to 0 on a clear day, 0.5 on a partly sunny day and 1 on a cloudy day. Snails water loss rate is ignored for this model. GridMET has no information on the wind sensor height, and therefore is set to 1 m above ground for this model.
 <br>
 <br>
-<b>Mussels</b>: <code>TrenchR::Tb_mussel</code> function is used to calculate mussel body temperatures.
-Diffuse fraction, which is the proportion of solar radiation that is diffuse, is 0.1 on a clear day, 0.5 on a partly sunny day and 1 on a cloudy day. When gaping, we assume constant mass loss rate of 5% of initial body mass per hour. 
+<b>Mussels</b>: <code>Tb_mussel</code> function is used to calculate mussel body temperatures.
+Diffuse fraction, which is the proportion of solar radiation that is diffuse, is defined as 0.1 on a clear day, 0.5 on a partly sunny day and 1 on a cloudy day. When gaping, we assume constant mass loss rate of 5% of initial body mass per hour. 
 <br>
 <br>
 <b>Other data</b>: Elevation data are obtained from NOAA ETOPO1 Global Relief Model, grid-registered ETOPO1 Ice Surface.

@@ -432,6 +432,15 @@ shinyServer <- function(input, output, session) {
 
   })
   
+  output$title <- renderUI({
+    if (input$year == "recent") {
+      year <- paste("on", Sys.Date() - x)
+    } else {
+      year <- paste("in", monthNames[as.numeric(strsplit(x = as.character(Sys.Date() - x), split = "-")[[1]][2])], input$year)
+    }
+    HTML("<h4>", input$species, "body temperature", year, "</h4>")
+  })
+
   observeEvent(input$mymap_groups, {
     
     min <- minValue(bodyTemp())
