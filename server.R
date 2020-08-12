@@ -372,61 +372,104 @@ shinyServer <- function(input, output, session) {
     validate(
       need(bodyTemp(), "")
     )
-    min <- minValue(bodyTemp())
-    max <- maxValue(bodyTemp())
-    int <- (max - min) / 5
+    min <- round(minValue(bodyTemp()))
+    max <- round(maxValue(bodyTemp()))
     CTmax <- input$CTmax
-    palette <- c('#DCECC4', '#4376c7', '#59711b', '#ffc324', '#ff7729')
-    bins <- c()
-    current = round(min)
-    count = 0
     
-    while(CTmax > current && max - 2 > current) {
-      count = count + 1
-      bins <- c(bins, current)
-      current <- round(current + int)
+    # int <- (max - min) / 5
+    # 
+    # palette <- c('#DCECC4', '#4376c7', '#59711b', '#ffc324', '#ff7729')
+    # bins <- c()
+    # current = round(min)
+    # count = 0
+    # 
+    # while(CTmax > current && max - 2 > current) {
+    #   count = count + 1
+    #   bins <- c(bins, current)
+    #   current <- round(current + int)
+    # }
+    # 
+    # if (input$red) {
+    #   if(CTmax > max) {
+    #     bins <- c(bins, round(max))
+    #     pal_tb <- c(palette[0:count])
+    #   } else {
+    #     bins <- c(bins, round(max(min, CTmax)), round(max))
+    #     pal_tb <- c(palette[0:count], "red")
+    #   }
+    # } else {
+    #   bins <- c(round(min), round(min + int), round(min + int * 2), round(min + int * 3), round(max - int), round(max))
+    #   pal_tb <- palette
+    # }
+    # 
+    # pal <- colorBin(palette = pal_tb, 
+    #                 c(round(min), round(max)),
+    #                 bins = bins,
+    #                 na.color = "transparent"
+    # )
+    
+    arr <- seq(-30, 70, by = 10)
+    i = 1
+    while(arr[i] < min) {
+        i = i + 1
+    }
+    j = 11
+    while(arr[j] > max) {
+      j = j - 1
     }
     
-    if (input$red) {
-      if(CTmax > max) {
-        bins <- c(bins, round(max))
-        pal_tb <- c(palette[0:count])
-      } else {
-        bins <- c(bins, round(max(min, CTmax)), round(max))
-        pal_tb <- c(palette[0:count], "red")
+    bins <- c(min, arr[i:j], max)
+    cols <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#cab2d6','#fdbf6f','#ff7f00','#e31a1c', '#6a3d9a')
+    pal_tb <- cols[(i - 1):j]
+    
+    if(input$red && CTmax < max) {
+      if (CTmax %% 10 != 0) {
+        bins <- sort(c(bins, CTmax))
       }
-    } else {
-      bins <- c(round(min), round(min + int), round(min + int * 2), round(min + int * 3), round(max - int), round(max))
-      pal_tb <- palette
+      bins <- c(bins[1:(which(bins == CTmax))], max)
+      pal_tb <- c(pal_tb[1:(which(bins == CTmax) - 1)], "red")
     }
     
-    pal <- colorBin(palette = pal_tb, 
-                    c(round(min), round(max)),
+    pal <- colorBin(palette = pal_tb,
+                    c(min, max),
                     bins = bins,
                     na.color = "transparent"
-    )
+           )
+
+    #____________________________________________________________________-
     
     validate(
       need(airTemp(), "")
     )
     minTa <- round(minValue(airTemp()))
     maxTa <- round(maxValue(airTemp()))
-    intTa <- round((maxTa - minTa) / 5)
-    pal_air <- colorBin(palette = palette,
+    
+    i = 1
+    while(arr[i] < minTa) {
+      i = i + 1
+    }
+    j = 11
+    while(arr[j] > maxTa) {
+      j = j - 1
+    }
+    
+    binsTa <- c(minTa, arr[i:j], maxTa)
+    palTa <- cols[(i - 1):j]
+    pal_air <- colorBin(palette = palTa,
                         c(minTa, maxTa),
-                        bins = c(minTa, minTa + intTa, minTa + intTa * 2, minTa + intTa * 3, maxTa - intTa, maxTa),
+                        bins = binsTa,
                         na.color = "transparent"
-    )
+                        )
     
     map <- leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>% 
-      addRasterImage(x = bodyTemp(), colors = pal, group = "Body temperatures", opacity = 0.6) %>%
-      addRasterImage(x = airTemp(), colors = pal_air, group = "Air temperatures", opacity = 0.6) %>%
+      addRasterImage(x = bodyTemp(), colors = pal, group = "Body temperatures", opacity = 1) %>%
+      addRasterImage(x = airTemp(), colors = pal_air, group = "Air temperatures", opacity = 1) %>%
       setView(lng=-98.5795, lat=39.8283, zoom=4) %>%
       addLayersControl(baseGroups = c("Body temperatures", "Air temperatures")) %>%
-      addLegend(pal = pal,
-                values = c(min, max),
-                group = "Body legend",
+      addLegend(pal = pal, 
+                opacity = 1,
+                values = c(min, max), 
                 position = "bottomright",
                 title = "Body temperatures (°C)")
 
@@ -442,53 +485,64 @@ shinyServer <- function(input, output, session) {
   })
 
   observeEvent(input$mymap_groups, {
-    
-    min <- minValue(bodyTemp())
-    max <- maxValue(bodyTemp())
-    int <- (max - min) / 5
+    min <- round(minValue(bodyTemp()))
+    max <- round(maxValue(bodyTemp()))
     CTmax <- input$CTmax
-    palette <- c('#DCECC4', '#4376c7', '#59711b', '#ffc324', '#ff7729')
-    bins <- c()
-    current = round(min)
-    count = 0
     
-    while(CTmax > current && max - 2 > current) {
-      count = count + 1
-      bins <- c(bins, current)
-      current <- round(current + int)
+    arr <- seq(-30, 70, by = 10)
+    i = 1
+    while(arr[i] < min) {
+      i = i + 1
+    }
+    j = 11
+    while(arr[j] > max) {
+      j = j - 1
     }
     
-    if (input$red) {
-      if(CTmax > max) {
-        bins <- c(bins, round(max))
-        pal_tb <- c(palette[0:count])
-      } else {
-        bins <- c(bins, round(max(min, CTmax)), round(max))
-        pal_tb <- c(palette[0:count], "red")
+    bins <- c(min, arr[i:j], max)
+    cols <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#cab2d6','#fdbf6f','#ff7f00','#e31a1c', '#6a3d9a')
+    pal_tb <- cols[(i - 1):j]
+    
+    if(input$red && CTmax < max) {
+      if (CTmax %% 10 != 0) {
+        bins <- sort(c(bins, CTmax))
       }
-    } else {
-      bins <- c(round(min), round(min + int), round(min + int * 2), round(min + int * 3), round(max - int), round(max))
-      pal_tb <- palette
+      bins <- c(bins[1:(which(bins == CTmax))], max)
+      pal_tb <- c(pal_tb[1:(which(bins == CTmax) - 1)], "red")
     }
     
-    pal <- colorBin(palette = pal_tb, 
-                    c(round(min), round(max)),
+    pal <- colorBin(palette = pal_tb,
+                    c(min, max),
                     bins = bins,
                     na.color = "transparent"
     )
     
+    #____________________________________________________________________-
+
     minTa <- round(minValue(airTemp()))
     maxTa <- round(maxValue(airTemp()))
-    intTa <- round((maxTa - minTa) / 5)
-    pal_air <- colorBin(palette = palette,
+    
+    i = 1
+    while(arr[i] < minTa) {
+      i = i + 1
+    }
+    j = 11
+    while(arr[j] > maxTa) {
+      j = j - 1
+    }
+    
+    binsTa <- c(minTa, arr[i:j], maxTa)
+    palTa <- cols[(i - 1):j]
+    pal_air <- colorBin(palette = palTa,
                         c(minTa, maxTa),
-                        bins = c(minTa, minTa + intTa, minTa + intTa * 2, minTa + intTa * 3, maxTa - intTa, maxTa),
+                        bins = binsTa,
                         na.color = "transparent"
     )
-    
+
     if(input$mymap_groups == "Body temperatures") {
       leafletProxy('mymap') %>% clearControls() %>%
-        addLegend(pal = pal,
+        addLegend(pal = pal, 
+                  opacity = 1,
                   values = c(min, max),
                   group = "Body legend",
                   position = "bottomright",
@@ -496,29 +550,13 @@ shinyServer <- function(input, output, session) {
     } else {
       leafletProxy('mymap') %>% clearControls() %>%
         addLegend(pal = pal_air,
+                  opacity = 1,
                   values = c(minTa, maxTa),
                   group = "Air legend",
                   position = "bottomright",
                   title = "Air temperatures (°C)")
     }
   })
-  
-  # observeEvent(input$year, {
-  #   if (input$options == "gridMET" && input$year == "recent") {
-  #     hide("monthAll")
-  #   } else {
-  #     show("monthAll")
-  #   }
-  # })
-  
-  # observe({
-  #   if (input$options == "gridMET") {
-  #     choices = c("recent", 2050, 2070, 2090)
-  #   } else {
-  #     choices = c("normals" = "recent", 2050, 2070, 2090)
-  #   }
-  #   updateRadioGroupButtons(session, "year", choices = choices, status = "success", size = "sm")
-  # })
 }
 
 

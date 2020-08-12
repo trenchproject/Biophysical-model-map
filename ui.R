@@ -36,7 +36,7 @@ shinyUI <-
     useShinyjs(),
     titlePanel("Biophysical model map"),
     hr(),
-    p("This map displays the operative tempearture of lizards, grasshoppers, salamanders, butterflies, snails and mussels across the United States for 2020, 2050, 2070 and 2090 using a future temperature projection model."),
+    p("This map displays the operative temperature of lizards, grasshoppers, salamanders, butterflies, snails, and mussels across the United States for 2020, 2050, 2070, and 2090 using a future temperature projection model."),
     includeHTML("intro.html"),
     # br(), 
     # hr(),
