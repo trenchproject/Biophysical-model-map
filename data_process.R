@@ -11,16 +11,6 @@ library("raster")
 # ccsm4, emission paths: RCP2.6, 6.0, 8.5
 # No analysis, NetCDF
 
-tas <- nc_open("Extraction_tas.nc")
-tas50 <- nc_open("2050_tas.nc")
-tas <- nc_open("2090_tas.nc")
-
-tas50 <- ncvar_get(tas50)
-temperature <- ncvar_get(tas)
-temperature <- temperature[,,,c(21, 26, 31)]   # Get ccsm4.5rcp2.6, 6.0 and 8.5
-sum(temperature[,,8,3] > temperature[,,8,1], na.rm = TRUE)
-max(temperature[,,8,3], na.rm = TRUE)
-max(temperature[,,8,1], na.rm = TRUE)
 
 # temperature (longitude, latitude, months, projections)
 # longitude: 1 - 460
@@ -32,13 +22,15 @@ max(temperature[,,8,1], na.rm = TRUE)
 
 # months: 1 - 12
 
-# projections: 1 - 3  (look into Projections5.txt file to see which number correspond to what)
-#              ccsm4.5.rcp26 = 1  
-#              ccsm4.5.rcp60 = 2  
-#              ccsm4.5.rcp85 = 3  
+# projections: 1 - 160 (look into Projections5.txt file to see which number correspond to what)
+#              ccsm4.5.rcp26 = 21  
+#              ccsm4.5.rcp60 = 26  
+#              ccsm4.5.rcp85 = 31  
 
 
 # Read these first
+
+# Download US boundary from https://www.igismap.com/united-states-shapefile-download-free-map-boundary-states-and-county/
 shape <- st_read("Igismap/UnitedStates_Boundary.shp")
 
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
@@ -51,6 +43,7 @@ r = raster::brick(p)
 
 
 #______________________________________________________________________________________
+# Create rasters from _tas.nc raw data sets. 
 
 saveRaster <- function(year) {
   tas <- nc_open(paste0(year, "_tas.nc"))
@@ -59,7 +52,7 @@ saveRaster <- function(year) {
   for(scenario in c(26, 60, 85)) {  # Correspond to ccsm4.5rcp2.6, 6.0 and 8.5
     for (month in c(1:12)) {
       if (scenario == 26) {
-        projection = 21
+        projection = 21  # Check if these need to be modified. it depends on the year and the projections you select.
       } else if (scenario == 60) {
         projection = 26 
       } else {
@@ -85,12 +78,9 @@ saveRaster <- function(year) {
 
 saveRaster(2070)
 
-rcp26 <- raster("year2050/rcp26/Aug.grd")
-rcp85 <- raster("year2050/rcp85/Aug.grd")
-
 
 #_________________________________________________________________________________________
-
+# Create dif files which are the temperature difference between 2020.
 takeDif <- function(year) {
   for (scenario in c(26, 60, 85)) {
     dir.create(paste0("year", year, "dif"))
@@ -101,13 +91,11 @@ takeDif <- function(year) {
       writeRaster(dif, filename = paste0(dirname, "/", monthNames[month]), overwrite = TRUE)
     }
   }
-
 }
-
-takeDif(2070)
 
 
 #____________________________________________________________________________________
+# Full microclim data
 
 for(month in 1:12) {
   filename <- paste0("air_temperature_degC_120cm/TA120cm_", month, ".nc")
@@ -125,15 +113,11 @@ writeRaster(Ta, "microclim/Jan")
 brick("microclim/Jan.grd")
 
 #___________________________________________________________________________________
-
-for (month in 2:12) {
+# For demo. Includes just 1pm.
+for (month in 1:12) {
   filename <- paste0("microclim/", monthNames[month], ".grd")
   Ta <- brick(filename)
   airTemp <- Ta[[13]]
   writeRaster(airTemp, paste0("microclim_short/", monthNames[month]))
 }
 
-airTemp
-
-rasterVis::levelplot(rcp26)
-rasterVis::levelplot(rcp85)
