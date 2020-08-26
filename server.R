@@ -418,7 +418,7 @@ shinyServer <- function(input, output, session) {
       j = j - 1
     }
     
-    bins <- c(min, arr[i:j], max)
+    bins <- unique(c(min, arr[i:j], max))
     cols <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#cab2d6','#fdbf6f','#ff7f00','#e31a1c', '#6a3d9a')
     pal_tb <- cols[(i - 1):j]
     
@@ -429,7 +429,7 @@ shinyServer <- function(input, output, session) {
       bins <- c(bins[1:(which(bins == CTmax))], max)
       pal_tb <- c(pal_tb[1:(which(bins == CTmax) - 1)], "red")
     }
-    
+
     pal <- colorBin(palette = pal_tb,
                     c(min, max),
                     bins = bins,
@@ -453,7 +453,7 @@ shinyServer <- function(input, output, session) {
       j = j - 1
     }
     
-    binsTa <- c(minTa, arr[i:j], maxTa)
+    binsTa <- unique(c(minTa, arr[i:j], maxTa))
     palTa <- cols[(i - 1):j]
     pal_air <- colorBin(palette = palTa,
                         c(minTa, maxTa),
@@ -467,12 +467,11 @@ shinyServer <- function(input, output, session) {
       addRasterImage(x = airTemp(), colors = pal_air, group = "Air temperatures", opacity = 1) %>%
       setView(lng=-98.5795, lat=39.8283, zoom=4) %>%
       addLayersControl(baseGroups = c("Body temperatures", "Air temperatures")) %>%
-      addLegend(pal = pal, 
+      addLegend(pal = pal,
                 opacity = 1,
-                values = c(min, max), 
+                values = c(min, max),
                 position = "bottomright",
                 title = "Body temperatures (°C)")
-
   })
   
   output$title <- renderUI({
@@ -499,7 +498,7 @@ shinyServer <- function(input, output, session) {
       j = j - 1
     }
     
-    bins <- c(min, arr[i:j], max)
+    bins <- unique(c(min, arr[i:j], max))
     cols <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#cab2d6','#fdbf6f','#ff7f00','#e31a1c', '#6a3d9a')
     pal_tb <- cols[(i - 1):j]
     
@@ -531,7 +530,7 @@ shinyServer <- function(input, output, session) {
       j = j - 1
     }
     
-    binsTa <- c(minTa, arr[i:j], maxTa)
+    binsTa <- unique(c(minTa, arr[i:j], maxTa))
     palTa <- cols[(i - 1):j]
     pal_air <- colorBin(palette = palTa,
                         c(minTa, maxTa),
