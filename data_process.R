@@ -31,11 +31,13 @@ library("raster")
 # Read these first
 
 # Download US boundary from https://www.igismap.com/united-states-shapefile-download-free-map-boundary-states-and-county/
-shape <- st_read("Igismap/UnitedStates_Boundary.shp")
+shape <- st_read("UnitedStates_Boundary.shp")
 
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 
+library(AOI)
+library(climateR)
 AOI = aoi_get(state = "conus")
 p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2)
 

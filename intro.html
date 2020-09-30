@@ -4,7 +4,7 @@ This activity uses weather data to predict organismal body temperatures across t
 <br>
 <br>
 When a future year is selected, it adds some "anomaly" to these baseline temperatures, which is an offset value of how much warmer the air temperature is predicted to be in the future. We use the CMIP5 model - which is explained in detail below - to calculate this anomaly. We obtain the temperature data from the model for 2020, 2050, 2070 and 2090, and the temperature difference between 2020 and the year selected is used as the anomaly. 
-We chose to use gridMET data for 2020 instead of the CMIP5 model because gridMET data are measured temperatures unlike CMIP5 data, which are predicted temperatures. We employ the anomaly and add it to 2020 gridMET data instead of directly using temperature data from the model because CMIP5 model and gridMET cannot be directly compared, as CMIP5 predicts surface temperatures while measures air temperatures. 
+We chose to use gridMET data for 2020 instead of the CMIP5 model because gridMET data are measured temperatures unlike CMIP5 data, which are predicted temperatures. We employ the anomaly and add it to 2020 gridMET data instead of directly using temperature data from the model because CMIP5 model and gridMET cannot be directly compared, as CMIP5 predicts surface temperatures while gridMET measures air temperatures. 
 Additionally, wind speed data are obtained from gridMET.
 
 <h4>CMIP5 model</h4>

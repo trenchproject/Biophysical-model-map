@@ -1,5 +1,7 @@
 source("functions.R", local = TRUE)
+source("updates.R", local = TRUE)
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+hours <- c("12 AM","01 AM","02 AM","03 AM","04 AM","05 AM","06 AM","07 AM","08 AM","09 AM","10 AM","11 AM","12 PM","01 PM","02 PM","03 PM","04 PM","05 PM","06 PM","07 PM","08 PM","09 PM", "10 PM","11 PM")
 
 AOI = aoi_get(state = "conus")
 x = 3
@@ -7,6 +9,11 @@ elevData <- raster("elevData.grd")
 p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - x, endDate = Sys.Date() - x)
 r = raster::brick(p)
 names(r) = c('tmin', 'tmax', 'wind')
+df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
+
+updates <- read.csv("LastDate")
+lastDate <- as.Date(updates$LastDate)
+
 
 
 shinyServer <- function(input, output, session) {
@@ -40,26 +47,58 @@ shinyServer <- function(input, output, session) {
   #   r
   # })
   
-  hour <- reactive({
-    if (input$hour == "12 AM") {
-      hour <- 0
-    } else {
-      hour <- as.numeric(strsplit(input$hour, " ")[[1]][1])
-      if (strsplit(input$hour, " ")[[1]][2] == "PM" & hour != 12) {
-        hour <- hour + 12
-      } 
-    }
-    hour
-  })
   
-  output$future <- renderUI({
-    if(input$year != "recent") {
+  #___________________________________________________________________________________
+  # renderUI's
+
+  output$futureUI <- renderUI({
+    validate(
+      need(input$year, "")
+    )
+    if (input$year == "Near-term forecast") {
+      list(
+        fluidRow(
+          column(5, 
+                 tipify(radioGroupButtons("term", "Near term", c("In 1 week", "In 1 month", "Other"), selected = NA, status = "danger", size = "sm", justified = TRUE), 
+                        "\"Other\" lets you select a specific time but takes minutes to run")),
+          column(2, style = "margin-top: 35px;", 
+                 paste0("Last updated on ", lastDate + updates$x)),
+          column(1, offset = 0, style = "margin-top: 35px; padding:0px;",
+                 tipify(actionButton("update", "Update", style='padding:4px; font-size:80%', styleclass = "primary"), 
+                           "Update to the most recent data source. This can take minutes."))
+        )
+      )
+    } else if (input$year %in% c(2050, 2070, 2090)) {
       fluidRow(
-        column(5, tipify(radioGroupButtons("scenario", "Scenarios", c("Optimistic", "Intermediate", "Pessimistic"), status = "danger", size = "sm", justified = TRUE),"RCP2.6 / RCP6.0 / RCP8.5"))
-        # column(4, offset = 1, selectInput("month", "Month", choices = monthNames))
+        column(5, tipify(radioGroupButtons("scenario", "Scenarios", c("Optimistic", "Intermediate", "Pessimistic"), status = "danger", size = "sm", justified = TRUE), "RCP2.6 / RCP6.0 / RCP8.5"))
       )
     }
   })
+  
+  output$manualUI <- renderUI({
+    validate(
+      need(input$term == "Other", "")
+    )
+    fluidRow(
+      column(2, dateInput("date", "Specify date and time", value = Sys.Date(), min = lastDate, max = lastDate + 270)),
+      column(2, style = "margin-top: 5px;",
+             pickerInput("time", "", choices = c("0:00", "6:00", "12:00", "18:00"), 
+                            options = list(style = "btn-success"))),
+      column(2, style = "margin-top: 25px;",
+             tipify(actionButton("run", "Run", styleclass = "primary"), 
+                    "This will take 4-5 minutes to run."))
+    )
+  })
+  
+  output$hourUI <- renderUI({
+    validate(
+      need(input$year, "")
+    )
+    if (input$year != "Near-term forecast") {
+      selectInput("hour", list(icon("glyphicon glyphicon-time", lib = "glyphicon"), "Hour"), choices = hours, selected = "01 PM")
+    } 
+  })
+  
   
   # widgets to show
   output$dynamicUI <- renderUI({
@@ -69,10 +108,6 @@ shinyServer <- function(input, output, session) {
                                         '<i class="fas fa-cloud"></i>' =  "Cloudy"), 
                            status = "info", justified = TRUE),
                       "Clear / Partly sunny / Cloudy")
-    # weather <- selectInput("weather", list(icon("wind"), "Weather"), 
-    #                        choices =  c("Sunny", "Partially cloudy", "Overcast"))
-                           #choicesOpt = list(icon = c("fa fa-sun", "fa fa-cloud-sun", "glyphicon glyphicon-cloud")),
-                           #options = list(style = "none"))
     
     soil <- tipify(radioGroupButtons("soil", list(icon("seedling"), "Soil surface"),
                         choices = c('<i class="fab fa-pagelines"></i>' = "Grass", 
@@ -80,10 +115,6 @@ shinyServer <- function(input, output, session) {
                                     '<i class="far fa-snowflake"></i>' = "Snow"),
                         status = "danger", justified = TRUE),
                    "Grass / Dark soil / Snow")
-    # soil <- selectInput("Soil surface", list(icon("seedling"), "Soil"),
-    #             choices = c("Grass", "Dark soil", "Snow"))
-                # choicesOpt = list(icon = c("fa fa-pagelines", "fa fa-circle", "fa fa-snowflake")),
-                # options = list(style = "none"))
     if(input$species == "Lizard") {
       list(
         h4(div(tags$img(src="Lizard_icon.png", height = 25),"Lizard")),
@@ -95,8 +126,6 @@ shinyServer <- function(input, output, session) {
                            choices = c('<i class="fas fa-seedling"></i>' = "Ground", 
                                        '<i class="fas fa-tree"></i>' = "Tree"),
                            status = "primary", justified = TRUE),
-                           # choicesOpt = list(icon = c("fa fa-seedling", "fa fa-tree")),
-                           # options = list(style = "none")), 
                "Lizard on ground / on trees")
       )
     } else if(input$species == "Grasshopper") {
@@ -104,10 +133,6 @@ shinyServer <- function(input, output, session) {
         h4(div(tags$img(src="Grasshopper_icon.png", height = 25), "Grasshopper")),
         numericInput("length", list(icon("ruler"), ("Length (mm)")), value = 50),
         tipify(sliderInput("abs_hopper", list(icon("tint"), "Absorptivity"), min = 0, max = 1, value = 0.6, step = 0.1), "Grasshopper absorptivity to solar radiation"),
-        # selectInput("soil", list(icon("seedling"), "Soil surface"), 
-        #             choices = c("Grass", "Dark soil", "Snow")),
-                    # choicesOpt = list(icon = c("fa fa-pagelines", "fa fa-circle", "fa fa-snowflake")),
-                    # options = list(style = "none")),
         soil,
         weather
       )
@@ -145,13 +170,42 @@ shinyServer <- function(input, output, session) {
     }
   })
 
+  
+  #_______________________________________________________________________________________
+  # reactives (hour, zenith, albedo, airTemp, bodyTemp)
+  
+  manualUpdate <- eventReactive(input$update, {
+    updateData()
+  })
+  
+  hour <- reactive({
+    validate(
+      need(input$year, "")
+    )
+    if (input$year == "Near-term forecast") {
+      hour <- 12
+    } else {  # input$hour exists
+      validate(
+        need(input$hour, "")
+      )
+      if (input$hour == "12 AM") {
+        hour <- 0
+      } else {
+        hour <- as.numeric(strsplit(input$hour, " ")[[1]][1])
+        if (strsplit(input$hour, " ")[[1]][2] == "PM" & hour != 12) {
+          hour <- hour + 12
+        } 
+      }
+    }
+    hour
+  })
+  
   zenith <- reactive({
     validate(
+      need(input$year, ""),
       need(input$species %in% c("Lizard", "Grasshopper", "Butterfly", "Mussel"), "")
     )
-    df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
     
-    #df$zenith <- zenith_angle(doy = (which(input$monthAll %in% monthNames) - 1) * 30 + 15, lat = df$y, lon = df$x, hour = hour())
     df$zenith <- zenith_angle(doy = day_of_year(Sys.Date() - x), lat = df$y, lon = df$x, hour = hour())
     df_raster <- df
     coordinates(df_raster) <- ~ x + y
@@ -159,18 +213,11 @@ shinyServer <- function(input, output, session) {
     crs(df_raster) <- "+proj=longlat +ellps=WGS84 +no_defs"
     zenith <- raster(df_raster)
     
-    # if (input$year != 2020) {
-    #   validate(
-    #     need(airTemp(), "")
-    #   )
-    #   zenith <- resample(zenith, airTemp())
-    # }
     zenith
   })
   
   albedo <- reactive({
     validate(
-      # need(input$species %in% c("Grasshopper", "Lizard", "Butterfly"), ""),
       need(input$soil, "")
     )
     if(input$soil == "Grass") {
@@ -182,13 +229,50 @@ shinyServer <- function(input, output, session) {
     }
   })
   
+  
+  other <- eventReactive(input$run, {
+    print("Other gets run.")
+    validate(
+      need(input$date, "need date input"),
+      need(input$time, "need time input")
+    )
+      brick <- brick("forecast.grb2")
+      index <- (input$date - lastDate) * 4 + (as.numeric(str_split(input$time, ":")[[1]][1]) - updates$Hour) + 1
+      shape <- st_read("UnitedStates_Boundary.shp")
+      airTemp <- brick[[index]] %>%
+        rotate() %>%
+        projectRaster(crs = "+proj=longlat +ellps=WGS84 +no_defs") %>%
+        resample(r) %>%
+        mask(shape)
+      airTemp
+    
+  })
+  
   airTemp <- reactive({
+    validate(
+      need(input$year, "")
+    )
+    
     month <- monthNames[as.numeric(strsplit(x = as.character(Sys.Date() - x), split = "-")[[1]][2])]
-
-    # if (input$options == "gridMET") {
-      
+  
+    if (input$year == "Near-term forecast") {
+      validate(
+        need(input$term, "")
+      )
+      if(input$term == "In 1 week") {
+        airTemp <- raster("OneWeekForecast.grd")
+      } else if (input$term == "In 1 month") {
+        airTemp <- raster("OneMonthForecast.grd")
+      } else {
+        validate(
+          need(other(), "")
+        )
+        airTemp <- raster("OneMonthForecast.grd")
+      }
+    } else {
       airTemp <- diurnal_temp_variation_sine(r$tmax - 273.15, r$tmin - 273.15, hour())
-      if (input$year != "recent") {
+      
+      if (input$year %in% c(2050, 2070, 2090)) {
         validate(need(input$scenario, ""))
         
         if (input$scenario == "Optimistic") {
@@ -200,6 +284,7 @@ shinyServer <- function(input, output, session) {
         }
         airTemp <- airTemp + raster(paste0("year", input$year, "dif/rcp", scn, "/", month, ".grd"))
       }
+    }
       
     # } else if (input$options == "microclim") {
     #   # filename <- paste0("microclim/", input$monthAll, ".grd")
@@ -230,10 +315,10 @@ shinyServer <- function(input, output, session) {
   })
   
   bodyTemp <- reactive({
-    # if (input$year != 2020) {
-    #   r <- resample(r, airTemp())
-    #   elevData <- resample(elevData, airTemp())
-    # }
+    validate(
+      need(airTemp(), "")
+    )
+
     airTemp <- resample(airTemp(), elevData)
     
     if (input$species %in% c("Grasshopper", "Butterfly", "Salamander", "Snail", "Mussel")) {
@@ -368,45 +453,17 @@ shinyServer <- function(input, output, session) {
     Tb
   })
 
+  #________________________________________________________________________________
+  # renders
+  
   output$mymap <- renderLeaflet({
     validate(
-      need(bodyTemp(), "")
+      need(bodyTemp(), ""),
+      need(airTemp(), "")
     )
     min <- round(minValue(bodyTemp()))
     max <- round(maxValue(bodyTemp()))
     CTmax <- input$CTmax
-    
-    # int <- (max - min) / 5
-    # 
-    # palette <- c('#DCECC4', '#4376c7', '#59711b', '#ffc324', '#ff7729')
-    # bins <- c()
-    # current = round(min)
-    # count = 0
-    # 
-    # while(CTmax > current && max - 2 > current) {
-    #   count = count + 1
-    #   bins <- c(bins, current)
-    #   current <- round(current + int)
-    # }
-    # 
-    # if (input$red) {
-    #   if(CTmax > max) {
-    #     bins <- c(bins, round(max))
-    #     pal_tb <- c(palette[0:count])
-    #   } else {
-    #     bins <- c(bins, round(max(min, CTmax)), round(max))
-    #     pal_tb <- c(palette[0:count], "red")
-    #   }
-    # } else {
-    #   bins <- c(round(min), round(min + int), round(min + int * 2), round(min + int * 3), round(max - int), round(max))
-    #   pal_tb <- palette
-    # }
-    # 
-    # pal <- colorBin(palette = pal_tb, 
-    #                 c(round(min), round(max)),
-    #                 bins = bins,
-    #                 na.color = "transparent"
-    # )
     
     arr <- seq(-30, 70, by = 10)
     i = 1
@@ -436,7 +493,8 @@ shinyServer <- function(input, output, session) {
                     na.color = "transparent"
            )
 
-    #____________________________________________________________________-
+    #___________________________________________________________________
+    # Coloring for air temperature
     
     validate(
       need(airTemp(), "")
@@ -475,14 +533,34 @@ shinyServer <- function(input, output, session) {
   })
   
   output$title <- renderUI({
-    if (input$year == "recent") {
+    validate(
+      need(input$year, "Select year")
+    )
+    if (input$year == "Recent") {
       year <- paste("on", Sys.Date() - x)
+    } else if (input$year == "Near-term forecast") {
+      validate(
+        need(input$term, "Select term")
+      )
+      if (input$term == "In 1 week") {
+        year <- paste("on", as.character(lastDate + updates$x + 7), "at noon")
+      } else if (input$term == "In 1 month") {
+        year <- paste("on", as.character(lastDate + updates$x + 30), "at noon")
+      } else {
+        validate(
+          need(input$date, ""),
+          need(input$time, "")
+        )
+        year <- paste("on", input$date, "at", input$time)
+      }
     } else {
       year <- paste("in", monthNames[as.numeric(strsplit(x = as.character(Sys.Date() - x), split = "-")[[1]][2])], input$year)
     }
     HTML("<h4>", input$species, "body temperature", year, "</h4>")
   })
 
+  
+  # Map legend
   observeEvent(input$mymap_groups, {
     min <- round(minValue(bodyTemp()))
     max <- round(maxValue(bodyTemp()))
@@ -517,7 +595,8 @@ shinyServer <- function(input, output, session) {
     )
     
     #____________________________________________________________________-
-
+    # Coloring for air temperature
+    
     minTa <- round(minValue(airTemp()))
     maxTa <- round(maxValue(airTemp()))
     

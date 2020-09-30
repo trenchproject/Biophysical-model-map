@@ -600,3 +600,16 @@ Tb_mussel = function(L, H, T_a, T_g, S, k_d, u, psi, evap=FALSE, cl, group = "so
   
   return (T_b - 273.15)
 }
+
+
+
+valid_url <- function(url_in, t = 2){
+  if(is.na(url_in)) {
+    return (FALSE)
+  } else {
+    con <- url(url_in)
+    check <- suppressWarnings(try(open.connection(con, open="rt", timeout=t), silent = T)[1])
+    suppressWarnings(try(close.connection(con), silent = T))
+    ifelse(is.null(check), TRUE, FALSE)
+  }
+}
