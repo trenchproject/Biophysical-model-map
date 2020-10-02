@@ -14,7 +14,10 @@ df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
 updates <- read.csv("LastDate")
 lastDate <- as.Date(updates$LastDate)
 
-
+# Check if the data are updated
+if (lastDate < Sys.Date() - 7 - updates$x + 1) {
+  updateData()
+}
 
 shinyServer <- function(input, output, session) {
   
@@ -47,7 +50,7 @@ shinyServer <- function(input, output, session) {
   #   r
   # })
   
-  
+
   #___________________________________________________________________________________
   # renderUI's
 
@@ -59,18 +62,19 @@ shinyServer <- function(input, output, session) {
       list(
         fluidRow(
           column(5, 
-                 tipify(radioGroupButtons("term", "Near term", c("In 1 week", "In 1 month", "Other"), selected = NA, status = "danger", size = "sm", justified = TRUE), 
+                 tipify(radioGroupButtons("term", "Near term", c("3 days out", "5 days out", "7 days out", "Other"), selected = NA, status = "danger", size = "sm", justified = TRUE), 
                         "\"Other\" lets you select a specific time but takes minutes to run")),
           column(2, style = "margin-top: 35px;", 
                  paste0("Last updated on ", lastDate + updates$x)),
           column(1, offset = 0, style = "margin-top: 35px; padding:0px;",
                  tipify(actionButton("update", "Update", style='padding:4px; font-size:80%', styleclass = "primary"), 
-                           "Update to the most recent data source. This can take minutes."))
+                           "Update the data source to the most recent one available. This can take up to 10 minutes."))
         )
       )
     } else if (input$year %in% c(2050, 2070, 2090)) {
       fluidRow(
-        column(5, tipify(radioGroupButtons("scenario", "Scenarios", c("Optimistic", "Intermediate", "Pessimistic"), status = "danger", size = "sm", justified = TRUE), "RCP2.6 / RCP6.0 / RCP8.5"))
+        column(5, tipify(radioGroupButtons("scenario", "Scenarios", c("Optimistic", "Intermediate", "Pessimistic"), status = "danger", size = "sm", justified = TRUE), 
+                         "RCP2.6 / RCP6.0 / RCP8.5"))
       )
     }
   })
@@ -174,7 +178,7 @@ shinyServer <- function(input, output, session) {
   #_______________________________________________________________________________________
   # reactives (hour, zenith, albedo, airTemp, bodyTemp)
   
-  manualUpdate <- eventReactive(input$update, {
+  observeEvent(input$update, {
     updateData()
   })
   
@@ -231,7 +235,6 @@ shinyServer <- function(input, output, session) {
   
   
   other <- eventReactive(input$run, {
-    print("Other gets run.")
     validate(
       need(input$date, "need date input"),
       need(input$time, "need time input")

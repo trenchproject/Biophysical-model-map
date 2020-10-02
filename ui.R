@@ -27,6 +27,8 @@ library("RCurl")
 library("stringr")
 library("sf")
 library("shinysky")
+library("taskscheduleR")
+library("miniUI")
 
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
