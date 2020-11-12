@@ -26,51 +26,55 @@ library("AOI")
 library("RCurl")
 library("stringr")
 library("sf")
-library("shinysky")
-library("taskscheduleR")
+# library("shinysky")
 library("miniUI")
 
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
 
-shinyUI <-
-  fluidPage(
-    theme = shinytheme("united"),
-    setBackgroundColor(color = "#F5F5F5"), 
-    useShinyjs(),
-    title = "Biophysical model map",
-    titlePanel("Biophysical model map"),
-    hr(),
-    p("This map displays the operative temperature of lizards, grasshoppers, salamanders, butterflies, snails, and mussels across the United States for 2020, 2050, 2070, and 2090 using a future temperature projection model."),
-    includeHTML("intro.html"),
-
-    br(),
-    fluidRow(
-      column(6, radioGroupButtons("year", "Year", choices = c("Recent", "Near-term forecast", 2050, 2070, 2090), selected = NA, status = "success", size = "sm", justified = TRUE))
-    ),
-    
-    uiOutput(outputId = "futureUI"),
-    uiOutput(outputId = "manualUI"),
-    
-    sidebarLayout(
-      sidebarPanel(
-        selectInput("species", list(icon("paw"), "Species"), choices = c("Lizard", "Grasshopper", "Salamander", "Butterfly", "Snail", "Mussel")),
-        #selectInput("monthAll", list(icon("calendar-alt"), "Month"), choices = monthNames),
-        uiOutput(outputId = "hourUI"),
-        numericInput("CTmax", list(icon("thermometer-half"), "Critical thermal maximum (°C)"), value = 40),
-        materialSwitch("red", status = "danger", label = "Show areas above CTmax in red"),
-        hr(),
-        uiOutput(outputId = "dynamicUI")
+shinyUI <- fluidPage(
+  theme = shinytheme("united"),
+  setBackgroundColor(color = "#F5F5F5"), 
+  useShinyjs(),
+  title = "Biophysical model map",
+  titlePanel("Ectotherm body temperatures and thermal stress nowcasts and forecasts"),
+  hr(),
+  
+  tabsetPanel(
+    tabPanel("App description",
+      includeHTML("intro.html"),
+             ),
+    tabPanel("Map",
+      includeHTML("instruction.html"),
+      br(),
+      hr(),
+      fluidRow(
+        column(6, radioGroupButtons("year", "See temperature for...", choices = c("Recent", "This week", 2050, 2070, 2090), selected = NA, status = "success", size = "sm", justified = TRUE))
       ),
       
-      mainPanel(
-        #sliderInput("offset", "Warming offset (°C)", min = -5, max = 5, value = 0, step = 0.5),
-        htmlOutput("title"),
-        leafletOutput("mymap") %>% withSpinner(type = 7),
-      )
-    ),
+      uiOutput(outputId = "futureUI"),
     
-    bsTooltip("CTmax", "Oragnisms are in danger above this temperature"),
-    bsTooltip("offset", "Use this to impose climate warming/cooling")
-  )
+      sidebarLayout(
+        sidebarPanel(
+          selectInput("species", list(icon("paw"), "Species"), choices = c("Lizard", "Grasshopper", "Salamander", "Butterfly", "Snail", "Mussel")),
+          #selectInput("monthAll", list(icon("calendar-alt"), "Month"), choices = monthNames),
+          uiOutput(outputId = "hourUI"),
+          uiOutput(outputId = "tmaxUI"),
+          hr(),
+          uiOutput(outputId = "dynamicUI")
+        ),
+        
+        mainPanel(
+          switchInput(inputId = "scale", label = "Scale", onLabel = "Discrete", offLabel = "Continuous", inline = TRUE, value = TRUE, size = "small"),
+          #sliderInput("offset", "Warming offset (°C)", min = -5, max = 5, value = 0, step = 0.5),
+          htmlOutput("title"),
+          leafletOutput("mymap") %>% withSpinner(type = 7),
+        )
+      )
+    )
+  ),
+  
+  bsTooltip("CTmax", "Oragnisms are in danger above this temperature"),
+  bsTooltip("offset", "Use this to impose climate warming/cooling")
+)
 

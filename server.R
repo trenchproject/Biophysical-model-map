@@ -1,11 +1,12 @@
 source("functions.R", local = TRUE)
-source("updates.R", local = TRUE)
+
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 hours <- c("12 AM","01 AM","02 AM","03 AM","04 AM","05 AM","06 AM","07 AM","08 AM","09 AM","10 AM","11 AM","12 PM","01 PM","02 PM","03 PM","04 PM","05 PM","06 PM","07 PM","08 PM","09 PM", "10 PM","11 PM")
 
 AOI = aoi_get(state = "conus")
 x = 3
 elevData <- raster("elevData.grd")
+
 p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - x, endDate = Sys.Date() - x)
 r = raster::brick(p)
 names(r) = c('tmin', 'tmax', 'wind')
@@ -14,11 +15,7 @@ df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
 updates <- read.csv("LastDate")
 lastDate <- as.Date(updates$LastDate)
 
-# Check if the data are updated
-if (lastDate < Sys.Date() - 7 - updates$x + 1) {
-  updateData()
-}
-
+# Set up server
 shinyServer <- function(input, output, session) {
   
   # r <- reactive({
@@ -54,22 +51,18 @@ shinyServer <- function(input, output, session) {
   #___________________________________________________________________________________
   # renderUI's
 
+  
+  # Show options for dates and hours when "This week" is selected, and show options for scenarios when future years are selected.
   output$futureUI <- renderUI({
     validate(
       need(input$year, "")
     )
-    if (input$year == "Near-term forecast") {
-      list(
-        fluidRow(
-          column(5, 
-                 tipify(radioGroupButtons("term", "Near term", c("3 days out", "5 days out", "7 days out", "Other"), selected = NA, status = "danger", size = "sm", justified = TRUE), 
-                        "\"Other\" lets you select a specific time but takes minutes to run")),
-          column(2, style = "margin-top: 35px;", 
-                 paste0("Last updated on ", lastDate + updates$x)),
-          column(1, offset = 0, style = "margin-top: 35px; padding:0px;",
-                 tipify(actionButton("update", "Update", style='padding:4px; font-size:80%', styleclass = "primary"), 
-                           "Update the data source to the most recent one available. This can take up to 10 minutes."))
-        )
+    if (input$year == "This week") {
+      fluidRow(
+        column(2, dateInput("date", "Specify date and time", value = Sys.Date(), min = Sys.Date(), max = Sys.Date() + 6)),
+        column(2, style = "margin-top: 5px;",
+               pickerInput("time", "", choices = c("0:00", "6:00", "12:00", "18:00"), 
+                           options = list(style = "btn-success")))
       )
     } else if (input$year %in% c(2050, 2070, 2090)) {
       fluidRow(
@@ -79,33 +72,21 @@ shinyServer <- function(input, output, session) {
     }
   })
   
-  output$manualUI <- renderUI({
-    validate(
-      need(input$term == "Other", "")
-    )
-    fluidRow(
-      column(2, dateInput("date", "Specify date and time", value = Sys.Date(), min = lastDate, max = lastDate + 270)),
-      column(2, style = "margin-top: 5px;",
-             pickerInput("time", "", choices = c("0:00", "6:00", "12:00", "18:00"), 
-                            options = list(style = "btn-success"))),
-      column(2, style = "margin-top: 25px;",
-             tipify(actionButton("run", "Run", styleclass = "primary"), 
-                    "This will take 4-5 minutes to run."))
-    )
-  })
   
+  # Show choices for an hour to map if "Recent" or future years are selected.
   output$hourUI <- renderUI({
     validate(
       need(input$year, "")
     )
-    if (input$year != "Near-term forecast") {
+    if (input$year != "This week") {
       selectInput("hour", list(icon("glyphicon glyphicon-time", lib = "glyphicon"), "Hour"), choices = hours, selected = "01 PM")
     } 
   })
   
-  
-  # widgets to show
+
+  # Show appropriate widgets depending on the species selected
   output$dynamicUI <- renderUI({
+    
     weather <- tipify(radioGroupButtons("weather", list(icon("wind"), "Weather"), 
                            choices =  c('<i class="fas fa-sun"></i>' = "Clear", 
                                         '<i class="fas fa-cloud-sun"></i>' = "Partly sunny", 
@@ -119,12 +100,15 @@ shinyServer <- function(input, output, session) {
                                     '<i class="far fa-snowflake"></i>' = "Snow"),
                         status = "danger", justified = TRUE),
                    "Grass / Dark soil / Snow")
-    if(input$species == "Lizard") {
+    
+    if (input$species == "Lizard") {
       list(
-        h4(div(tags$img(src="Lizard_icon.png", height = 25),"Lizard")),
-        tipify(numericInput("svl", list(icon("ruler"),"Snout-vent length (mm)"), value = 60), "Length from the tip of the animal's nose to the opening of the cloaca at the tail base"),
+        h4(div(tags$img(src = "Lizard_icon.png", height = 25), "Lizard")),
+        tipify(numericInput("svl", list(icon("ruler"),"Snout-vent length (mm)"), value = 60), 
+               "Length from the tip of the animal's nose to the opening of the cloaca at the tail base"),
         numericInput("mass", list(icon("weight"),"Mass (g)"), value = 10),
-        tipify(selectInput("shade", list(icon("umbrella-beach"), "Shade"), choices = c("Exposed", "Covered")), "Are the lizards exposed to the sun or in the shade?", placement = "top"),
+        tipify(selectInput("shade", list(icon("umbrella-beach"), "Shade"), choices = c("Exposed", "Covered")), 
+               "Are the lizards exposed to the sun or in the shade?", placement = "top"),
         soil,
         tipify(radioGroupButtons("loc", list(icon("map-pin"), "Location"), 
                            choices = c('<i class="fas fa-seedling"></i>' = "Ground", 
@@ -132,11 +116,12 @@ shinyServer <- function(input, output, session) {
                            status = "primary", justified = TRUE),
                "Lizard on ground / on trees")
       )
-    } else if(input$species == "Grasshopper") {
+    } else if (input$species == "Grasshopper") {
       list(
-        h4(div(tags$img(src="Grasshopper_icon.png", height = 25), "Grasshopper")),
+        h4(div(tags$img(src = "Grasshopper_icon.png", height = 25), "Grasshopper")),
         numericInput("length", list(icon("ruler"), ("Length (mm)")), value = 50),
-        tipify(sliderInput("abs_hopper", list(icon("tint"), "Absorptivity"), min = 0, max = 1, value = 0.6, step = 0.1), "Grasshopper absorptivity to solar radiation"),
+        tipify(sliderInput("abs_hopper", list(icon("tint"), "Absorptivity"), min = 0, max = 1, value = 0.6, step = 0.1), 
+               "Grasshopper absorptivity to solar radiation"),
         soil,
         weather
       )
@@ -148,23 +133,25 @@ shinyServer <- function(input, output, session) {
       )
     } else if (input$species == "Butterfly") {
       list(
-        h4(div(tags$img(src="Butterfly_icon.png", height = 20), "Butterfly")),
+        h4(div(tags$img(src = "Butterfly_icon.png", height = 20), "Butterfly")),
         numericInput("diam", list(icon("ruler-vertical"), "Thoracic diameter (mm)"), value = 3.6),
         numericInput("fur", list(icon("ruler-horizontal"), "Fur thickness (mm)"), value = 1.46),
-        tipify(sliderInput("abs_butter", list(icon("tint"), "Absorptivity"), min = 0, max = 1, value = 0.6, step = 0.1), "Wing solar absorbtivity"),
-        tipify(selectInput("shade", list(icon("umbrella-beach"), "Shade"), choices = c("Exposed", "Covered")), "Are the butterflies exposed to the sun or in the shade?", placement = "top"),
+        tipify(sliderInput("abs_butter", list(icon("tint"), "Absorptivity"), min = 0, max = 1, value = 0.6, step = 0.1), 
+               "Wing solar absorbtivity"),
+        tipify(selectInput("shade", list(icon("umbrella-beach"), "Shade"), choices = c("Exposed", "Covered")), 
+               "Are the butterflies exposed to the sun or in the shade?", placement = "top"),
         soil,
         weather
       )
     } else if (input$species == "Snail") {
       list(
-        h4(div(tags$img(src="Snail_icon.png", height = 25), "Snail")),
+        h4(div(tags$img(src = "Snail_icon.png", height = 25), "Snail")),
         weather,
         numericInput("length", list(icon("ruler"), "Length (mm)"), value = 12)
       )
     } else if (input$species == "Mussel") {
       list(
-        h4(div(tags$img(src="Mussel_icon.png", height = 25), "Mussel")),
+        h4(div(tags$img(src = "Mussel_icon.png", height = 25), "Mussel")),
         numericInput("length", list(icon("ruler-horizontal"), "Length (cm)"), value = 10),
         numericInput("height", list(icon("ruler-vertical"), "Length (cm)"), value = 5),
         awesomeCheckbox("gape", "Are the mussels gaping?"),
@@ -175,19 +162,27 @@ shinyServer <- function(input, output, session) {
   })
 
   
+  # Show option to color map where the temperature is above CTmax when the scale is discrete.
+  output$tmaxUI <- renderUI({
+    if (input$scale) { # input$scale == "Discrete"
+      list(
+        numericInput("CTmax", list(icon("thermometer-half"), "Critical thermal maximum (°C)"), value = 40),
+        materialSwitch("red", status = "danger", label = "Show areas above CTmax in red")
+      )
+    }
+  })
+  
+  
   #_______________________________________________________________________________________
   # reactives (hour, zenith, albedo, airTemp, bodyTemp)
   
-  observeEvent(input$update, {
-    updateData()
-  })
-  
+
   hour <- reactive({
     validate(
       need(input$year, "")
     )
-    if (input$year == "Near-term forecast") {
-      hour <- 12
+    if (input$year == "This week") {  # input$time exist / input$hour doesn't exist
+      hour <- as.numeric(str_split(input$time, ":00")[[1]][1])
     } else {  # input$hour exists
       validate(
         need(input$hour, "")
@@ -203,6 +198,7 @@ shinyServer <- function(input, output, session) {
     }
     hour
   })
+  
   
   zenith <- reactive({
     validate(
@@ -220,11 +216,12 @@ shinyServer <- function(input, output, session) {
     zenith
   })
   
+  
   albedo <- reactive({
     validate(
       need(input$soil, "")
     )
-    if(input$soil == "Grass") {
+    if (input$soil == "Grass") {
       albedo = 0.25 
     } else if (input$soil == "Dark soil") {
       albedo = 0.1
@@ -234,44 +231,16 @@ shinyServer <- function(input, output, session) {
   })
   
   
-  other <- eventReactive(input$run, {
-    validate(
-      need(input$date, "need date input"),
-      need(input$time, "need time input")
-    )
-      brick <- brick("forecast.grb2")
-      index <- (input$date - lastDate) * 4 + (as.numeric(str_split(input$time, ":")[[1]][1]) - updates$Hour) + 1
-      shape <- st_read("UnitedStates_Boundary.shp")
-      airTemp <- brick[[index]] %>%
-        rotate() %>%
-        projectRaster(crs = "+proj=longlat +ellps=WGS84 +no_defs") %>%
-        resample(r) %>%
-        mask(shape)
-      airTemp
-    
-  })
-  
   airTemp <- reactive({
     validate(
       need(input$year, "")
     )
     
     month <- monthNames[as.numeric(strsplit(x = as.character(Sys.Date() - x), split = "-")[[1]][2])]
-  
-    if (input$year == "Near-term forecast") {
-      validate(
-        need(input$term, "")
-      )
-      if(input$term == "In 1 week") {
-        airTemp <- raster("OneWeekForecast.grd")
-      } else if (input$term == "In 1 month") {
-        airTemp <- raster("OneMonthForecast.grd")
-      } else {
-        validate(
-          need(other(), "")
-        )
-        airTemp <- raster("OneMonthForecast.grd")
-      }
+
+    if (input$year == "This week") {
+      filename <- paste0("Forecasts/tmp", str_replace_all(input$date, "-", ""), "_", str_split(input$time, ":00")[[1]][1])
+      airTemp <- raster(filename)
     } else {
       airTemp <- diurnal_temp_variation_sine(r$tmax - 273.15, r$tmin - 273.15, hour())
       
@@ -317,13 +286,14 @@ shinyServer <- function(input, output, session) {
     airTemp
   })
   
+  
   bodyTemp <- reactive({
     validate(
       need(airTemp(), "")
     )
 
-    airTemp <- resample(airTemp(), elevData)
-    
+    airTemp <- airTemp()
+                   
     if (input$species %in% c("Grasshopper", "Butterfly", "Salamander", "Snail", "Mussel")) {
       validate(
         need(input$weather, "")
@@ -346,8 +316,7 @@ shinyServer <- function(input, output, session) {
       }
     }
     
-    if(input$species == "Lizard") {
-      
+    if (input$species == "Lizard") {
       validate(
         need(input$soil, "")
       )
@@ -375,7 +344,7 @@ shinyServer <- function(input, output, session) {
                       F_g=0.5
                       )
       
-    } else if(input$species == "Grasshopper") {
+    } else if (input$species == "Grasshopper") {
       
       Tb <- Tb_grasshopper(T_a = airTemp(), 
                            T_g = airTemp() + 5, 
@@ -456,9 +425,11 @@ shinyServer <- function(input, output, session) {
     Tb
   })
 
+  
   #________________________________________________________________________________
   # renders
   
+  # Main map
   output$mymap <- renderLeaflet({
     validate(
       need(bodyTemp(), ""),
@@ -466,67 +437,83 @@ shinyServer <- function(input, output, session) {
     )
     min <- round(minValue(bodyTemp()))
     max <- round(maxValue(bodyTemp()))
-    CTmax <- input$CTmax
     
-    arr <- seq(-30, 70, by = 10)
-    i = 1
-    while(arr[i] < min) {
-        i = i + 1
-    }
-    j = 11
-    while(arr[j] > max) {
-      j = j - 1
-    }
-    
-    bins <- unique(c(min, arr[i:j], max))
-    cols <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#cab2d6','#fdbf6f','#ff7f00','#e31a1c', '#6a3d9a')
-    pal_tb <- cols[(i - 1):j]
-    
-    if(input$red && CTmax < max) {
-      if (CTmax %% 10 != 0) {
-        bins <- sort(c(bins, CTmax))
+    if (input$scale) {  # If input$scale == "Discrete"
+      CTmax <- input$scale
+      
+      arr <- seq(-20, 70, by = 10) # Displayable temperature range is -20 ~ 70 °C
+      
+      # Finding the range of data
+      i = 1
+      while(arr[i] < min) {
+          i = i + 1
       }
-      bins <- c(bins[1:(which(bins == CTmax))], max)
-      pal_tb <- c(pal_tb[1:(which(bins == CTmax) - 1)], "red")
+      j = length(arr)
+      while(arr[j] > max) {
+        j = j - 1
+      }
+      # Creating bins in a way that in includes every multiple of 10s between min and max
+      bins <- unique(c(min, arr[i:j], max))  
+      
+      # Pre-specify color so that each temperature range is colored the same regardless of the scale
+      cols <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#cab2d6','#fdbf6f','#ff7f00','#e31a1c', '#6a3d9a')
+      pal_tb <- cols[(i - 1):j]
+      
+      # To color areas above CTmax in red
+      if (input$red && CTmax < max) {  # No need to add red if Ctmax was above the maximum temperature on the map
+        if (CTmax %% 10 != 0) {  # No bin needed to add if CTmax was a multiple of 10
+          bins <- sort(c(bins, CTmax))
+        }
+        bins <- c(bins[1:(which(bins == CTmax))], max)
+        pal_tb <- c(pal_tb[1:(which(bins == CTmax) - 1)], "red")
+      }
+      
+      pal <- colorBin(palette = pal_tb,
+                      domain = c(min, max),
+                      bins = bins,
+                      na.color = "transparent"
+             )
+  
+      #___________________________________________________________________
+      # Coloring for air temperature
+      
+      validate(
+        need(airTemp(), "")
+      )
+      minTa <- round(minValue(airTemp()))
+      maxTa <- round(maxValue(airTemp()))
+      
+      # Same process for air temperature. Finding the range.
+      i = 1
+      while(arr[i] < minTa) {
+        i = i + 1
+      }
+      j = length(arr)
+      while(arr[j] > maxTa) {
+        j = j - 1
+      }
+      
+      binsTa <- unique(c(minTa, arr[i:j], maxTa))
+      palTa <- cols[(i - 1):j]
+      pal_air <- colorBin(palette = palTa,
+                          domain = c(minTa, maxTa),
+                          bins = binsTa,
+                          na.color = "transparent"
+                          )
+      
+    } else {  # If input$scale == "Continuous"
+      pal <- colorNumeric(palette = c('#ffff33', '#f781bf', '#999999', '#4daf4a', '#377eb8', '#984ea3', '#ff7f00', '#e41a1c', '#a65628'),
+                          domain = c(-30, 70),
+                          na.color = "transparent"
+                          )
+      pal_air <- pal
     }
-
-    pal <- colorBin(palette = pal_tb,
-                    c(min, max),
-                    bins = bins,
-                    na.color = "transparent"
-           )
-
-    #___________________________________________________________________
-    # Coloring for air temperature
-    
-    validate(
-      need(airTemp(), "")
-    )
-    minTa <- round(minValue(airTemp()))
-    maxTa <- round(maxValue(airTemp()))
-    
-    i = 1
-    while(arr[i] < minTa) {
-      i = i + 1
-    }
-    j = 11
-    while(arr[j] > maxTa) {
-      j = j - 1
-    }
-    
-    binsTa <- unique(c(minTa, arr[i:j], maxTa))
-    palTa <- cols[(i - 1):j]
-    pal_air <- colorBin(palette = palTa,
-                        c(minTa, maxTa),
-                        bins = binsTa,
-                        na.color = "transparent"
-                        )
     
     map <- leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>% 
       addRasterImage(x = bodyTemp(), colors = pal, group = "Body temperatures", opacity = 1) %>%
       addRasterImage(x = airTemp(), colors = pal_air, group = "Air temperatures", opacity = 1) %>%
-      setView(lng=-98.5795, lat=39.8283, zoom=4) %>%
+      setView(lng = -98.5795, lat = 39.8283, zoom = 4) %>%
       addLayersControl(baseGroups = c("Body temperatures", "Air temperatures")) %>%
       addLegend(pal = pal,
                 opacity = 1,
@@ -535,31 +522,20 @@ shinyServer <- function(input, output, session) {
                 title = "Body temperatures (°C)")
   })
   
+  
+  # Title of the map
   output$title <- renderUI({
     validate(
-      need(input$year, "Select year")
+      need(input$year, "Select time to map")
     )
     if (input$year == "Recent") {
-      year <- paste("on", Sys.Date() - x)
-    } else if (input$year == "Near-term forecast") {
-      validate(
-        need(input$term, "Select term")
-      )
-      if (input$term == "In 1 week") {
-        year <- paste("on", as.character(lastDate + updates$x + 7), "at noon")
-      } else if (input$term == "In 1 month") {
-        year <- paste("on", as.character(lastDate + updates$x + 30), "at noon")
-      } else {
-        validate(
-          need(input$date, ""),
-          need(input$time, "")
-        )
-        year <- paste("on", input$date, "at", input$time)
-      }
+      day <- paste("on", Sys.Date() - x)
+    } else if (input$year == "This week") {
+      day <- paste("on", input$date, "at", input$time)
     } else {
-      year <- paste("in", monthNames[as.numeric(strsplit(x = as.character(Sys.Date() - x), split = "-")[[1]][2])], input$year)
+      day <- paste("in", monthNames[as.numeric(strsplit(x = as.character(Sys.Date() - x), split = "-")[[1]][2])], input$year)
     }
-    HTML("<h4>", input$species, "body temperature", year, "</h4>")
+    HTML("<h4>", input$species, "body temperature", day, "</h4>")
   })
 
   
@@ -567,60 +543,70 @@ shinyServer <- function(input, output, session) {
   observeEvent(input$mymap_groups, {
     min <- round(minValue(bodyTemp()))
     max <- round(maxValue(bodyTemp()))
-    CTmax <- input$CTmax
-    
-    arr <- seq(-30, 70, by = 10)
-    i = 1
-    while(arr[i] < min) {
-      i = i + 1
-    }
-    j = 11
-    while(arr[j] > max) {
-      j = j - 1
-    }
-    
-    bins <- unique(c(min, arr[i:j], max))
-    cols <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#cab2d6','#fdbf6f','#ff7f00','#e31a1c', '#6a3d9a')
-    pal_tb <- cols[(i - 1):j]
-    
-    if(input$red && CTmax < max) {
-      if (CTmax %% 10 != 0) {
-        bins <- sort(c(bins, CTmax))
-      }
-      bins <- c(bins[1:(which(bins == CTmax))], max)
-      pal_tb <- c(pal_tb[1:(which(bins == CTmax) - 1)], "red")
-    }
-    
-    pal <- colorBin(palette = pal_tb,
-                    c(min, max),
-                    bins = bins,
-                    na.color = "transparent"
-    )
-    
-    #____________________________________________________________________-
-    # Coloring for air temperature
     
     minTa <- round(minValue(airTemp()))
     maxTa <- round(maxValue(airTemp()))
     
-    i = 1
-    while(arr[i] < minTa) {
-      i = i + 1
+    if (input$scale) {  #If input$scale == "Discrete"
+      CTmax <- input$CTmax
+      
+      arr <- seq(-20, 70, by = 10)
+      i = 1
+      while(arr[i] < min) {
+        i = i + 1
+      }
+      j = length(arr)
+      while(arr[j] > max) {
+        j = j - 1
+      }
+      
+      bins <- unique(c(min, arr[i:j], max))
+      cols <- c('#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#cab2d6','#fdbf6f','#ff7f00','#e31a1c', '#6a3d9a')
+  
+      pal_tb <- cols[(i - 1):j]
+      
+      if (input$red && CTmax < max) {
+        if (CTmax %% 10 != 0) {
+          bins <- sort(c(bins, CTmax))
+        }
+        bins <- c(bins[1:(which(bins == CTmax))], max)
+        pal_tb <- c(pal_tb[1:(which(bins == CTmax) - 1)], "red")
+      }
+      
+      pal <- colorBin(palette = pal_tb,
+                      domain = c(min, max),
+                      bins = bins,
+                      na.color = "transparent"
+      )
+      
+      #____________________________________________________________________-
+      # Coloring for air temperature
+      
+      i = 1
+      while(arr[i] < minTa) {
+        i = i + 1
+      }
+      j = length(arr)
+      while(arr[j] > maxTa) {
+        j = j - 1
+      }
+      
+      binsTa <- unique(c(minTa, arr[i:j], maxTa))
+      palTa <- cols[(i - 1):j]
+      pal_air <- colorBin(palette = palTa,
+                          c(minTa, maxTa),
+                          bins = binsTa,
+                          na.color = "transparent"
+      )
+    } else {  # If input$scale == "Continuous"
+      pal <- colorNumeric(palette = c('#ffff33', '#f781bf', '#999999', '#4daf4a', '#377eb8', '#984ea3', '#ff7f00', '#e41a1c', '#a65628'),
+                          domain = c(-30, 70),
+                          na.color = "transparent"
+                          )
+      pal_air <- pal
     }
-    j = 11
-    while(arr[j] > maxTa) {
-      j = j - 1
-    }
-    
-    binsTa <- unique(c(minTa, arr[i:j], maxTa))
-    palTa <- cols[(i - 1):j]
-    pal_air <- colorBin(palette = palTa,
-                        c(minTa, maxTa),
-                        bins = binsTa,
-                        na.color = "transparent"
-    )
 
-    if(input$mymap_groups == "Body temperatures") {
+    if (input$mymap_groups == "Body temperatures") {
       leafletProxy('mymap') %>% clearControls() %>%
         addLegend(pal = pal, 
                   opacity = 1,
@@ -639,5 +625,4 @@ shinyServer <- function(input, output, session) {
     }
   })
 }
-
 

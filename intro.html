@@ -1,33 +1,52 @@
-<h3>Model description</h3>
-
-This activity uses weather data to predict organismal body temperatures across the US. We use the <code>getGridMET</code> function from the climateR package, which obtains the most recent daily maximum and minimum temperature data available. The maximum and minimum temperatures are converted to hourly temperatures by <code>TrenchR::diurnal_temp_variation_sine</code> function, which are used as a baseline for the 2020 data. 
+<h3>Introduction</h3>
+<img src="logos.png" width = "280px" align = "right">
+The body temperatures organisms experience in their local environments can differ dramatically from air temperatures due to their habitat, which is often near the ground far below standard temperature estimates, and additionally environmental factors, chiefly heating from solar radiation. Here we use “biophysical” models which balance heat exchanges between the organism and its environment to predict body temperatures (also called operative temperatures). We apply the body temperature estimates to identify potential areas of thermal stress. 
+<br>
+The app includes models for ectotherms including  lizards, grasshoppers, salamanders, butterflies, snails, and mussels across the United States. You can map body temperatures for three time periods:
 <br>
 <br>
-When a future year is selected, it adds some "anomaly" to these baseline temperatures, which is an offset value of how much warmer the air temperature is predicted to be in the future. We use the CMIP5 model - which is explained in detail below - to calculate this anomaly. We obtain the temperature data from the model for 2020, 2050, 2070 and 2090, and the temperature difference between 2020 and the year selected is used as the anomaly. 
-We chose to use gridMET data for 2020 instead of the CMIP5 model because gridMET data are measured temperatures unlike CMIP5 data, which are predicted temperatures. We employ the anomaly and add it to 2020 gridMET data instead of directly using temperature data from the model because CMIP5 model and gridMET cannot be directly compared, as CMIP5 predicts surface temperatures while gridMET measures air temperatures. 
-Additionally, wind speed data are obtained from gridMET.
-
-<h4>CMIP5 model</h4>
-For the future weather data, we obtian monthly average surface air temperatures from the CMIP5 multimodel ensemble. This gridded projection is based on the Community Climate System Model version 4 assuming representative concentration pathway (RCP) 2.6, 6.0 and 8.5, which correspond to "Optimistic", "Intermediate" and "Pessimistic" estimates respectively.
-These projections represent a greenhouse gas concentration trajectory, all of which could happen in the future. The projection pathways for each scenario are depicted in the graph below. 
-RCP2.6 is a stringent mitigation pathway in which radiative forcing peaks at approximately 3 W/m <sup>2</sup> before 2100 and then declines. It is characterized by substantial net negative emissions by 2100. RCP6.0 is an intermediate stabilization pathway in which radiative forcing is stabilized at approximately 6.0 W/m <sup>2</sup> after 2100. RCP8.5 is not the most realistic projection, and is often regarded as the worst-case climate change scenario. A nearly ice-free Arctic Ocean in September is likely for RCP8.5 before mid-century. 
+<b>Recent nowcast:</b> this option maps hourly data for the most recent data available, which is one to a few days before the current day.
+<br>
+<br>
+<b>Nearterm forecast:</b> this option allows you to select a day and time period within the next week to map.
+<br>
+<br>
+<b>Future forecast:</b> You can select hourly projections for future time periods including  2050, 2070, and 2090.
+The biophysical models and environmental data are described in more detail below.
+<br>
 <br>
 
-<p align='center'>
-<img src="RCP.png" width = "600px"/>
-</p>
+<h3>Environmental Data</h3>
+<img src="RCP.png" width = "500px" height = "300px" align = "right">
+
+<b>Recent nowcast:</b> This activity uses weather data to predict organismal body temperatures across the US. We use the <code>getGridMET</code> function from the climateR package to obtain gridded data of wind speed, daily maximum, and minimum temperatures from the most recent day available. The maximum and minimum temperatures are converted to hourly temperatures by <code>TrenchR::diurnal_temp_variation_sine</code> function and are used to calculate operative temperatures.
+<br>
+<br>
+<b>Nearterm forecast:</b> For near term forecasts, we use the <a href = "https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series"> CFSv2 forecasts from NOAA </a>. The downloaded GRIB files are processed in R using the <code>raster::brick</code> function, and the appropriate layer is used for mapping. The chosen layer is cropped in the shape of the continental United States using a shapefile obtained from <a href = "https://www.igismap.com/united-states-shapefile-download-free-map-boundary-states-and-county/"> Info GIS MAP.com </a>. The data are automatically updated at 2 am (PDT) every day for an accurate forecast.
 
 <br>
-<h4>Biophysical models</h4>
-We use different biophysical models for each animal, all of which are from the TrenchR package.
+<br>
+
+<b>Future forecast:</b> For the future weather data, we obtain monthly average surface air temperatures from the <a href = "https://gdo-dcp.ucllnl.org/downscaled_cmip_projections/#Projections:%20Subset%20Request"> CMIP5 multimodel ensemble </a>. This gridded projection is based on the Community Climate System Model version 4 assuming representative concentration pathway (RCP) 2.6, 6.0, and 8.5, which correspond to "Optimistic", "Intermediate", and "Pessimistic" estimates respectively. These projections represent a greenhouse gas concentration trajectory, all of which could happen in the future. The projection pathways for each scenario are depicted in the graph on the right. RCP2.6 is a stringent mitigation pathway in which radiative forcing peaks at approximately 3 W/m<cup>2</cup> before 2100 and then declines. It is characterized by substantial net negative emissions by 2100. RCP6.0 is an intermediate stabilization pathway in which radiative forcing is stabilized at approximately 6.0 W/m<sup>2</sup> after 2100. RCP8.5 is not the most realistic projection and is often regarded as the worst-case climate change scenario. A nearly ice-free Arctic Ocean in September is likely for RCP8.5 before mid-century.
+<br>
+<br>
+<img src="anomaly.png" width = "420px" align = "right">
+
+To map operative temperatures in 2050, 2070, and 2090, we calculate future air temperatures using some "anomaly". This anomaly is an offset value of how much warmer the air temperature is predicted to be in the future years compared to 2020. To accomplish this, we use the CMIP5 model to obtain gridded temperature data for 2020, 2050, 2070, and 2090. For example, the temperature difference between 2020 and 2050 is the anomaly for 2050, which is added to the temperature obtained through gridMET (see figure on the right). The reason why we don't just use the data given by the CMIP5 model (the top boxes in the figure) is that the temperatures are merely a prediction compared to the gridMET data, which are facts. We also can't directly compare gridMET data from 2020 (bottom left box) and CMIP5 data in 2050 (top right box) since one is air temperature while the other is surface temperature.
+<br>
+<br>
+<b>Other environmental data:</b> Elevation data are obtained from the NOAA ETOPO1 Global Relief Model, grid-registered ETOPO1 Ice Surface. Zenith angle was calculated using <code>TrenchR::zenith_angle</code> function for each point on the map by the longitude, latitude and the day of the year. For any functions that require ground temperatures, they are assumed to be 5 °C warmer than the air temperatures. Surface albedo is set to be 0.25 for grass, 0.1 for dark soil and 0.75 for snow covered surface as listed in Campbell & Norman (1997). Hourly radiation is estimated as 900 W/m<sup>2</sup>, 500 W/m<sup>2</sup>, and 200 W/m<sup>2</sup> for a clear day, a partly sunny day, and a cloudy day respectively.
+<br>
+<br>
+
+<h3>Biophysical models</h3>
+We use different biophysical models for each animal, all of which are from the <a href = "https://github.com/trenchproject/TrenchR"> TrenchR </a> package.
 <br>
 <br>
 <b>Lizards</b>: Lizard body temperatures are calculated based on the <code>Tb_lizard</code> function. Lizard solar absorptivity and thermal absoptivity are set to 0.9 and 0.965, respectively. View factors between the surface of the lizard and diffuse solar radiation, reflected solar radiation, atmospheric radiation and ground thermal radiation are all 0.5, assuming that the lizards are flat on the ground for simplification.
 <br>
 <br>
-<b>Grasshoppers</b>: Grasshopper body temperatures are computed using the <code>Tb_grasshopper</code> function.
-The clearness index is approximated to 0.75 for a clear day, 0.5 for a partly sunny day and 0.25 for a cloudy day. 
-We approximate that a quarter of a grasshopper's surface area is in contact with the ground at any given time.
+<b>Grasshoppers</b>: Grasshopper body temperatures are computed using the <code>Tb_grasshopper</code> function. The clearness index is approximated to 0.75 for a clear day, 0.5 for a partly sunny day and 0.25 for a cloudy day. We approximate that a quarter of a grasshopper's surface area is in contact with the ground at any given time.
 <br>
 <br>
 <b>Salamanders</b>: The <code>Tb_salamander_humid</code> function is used for the calculations.
@@ -47,8 +66,3 @@ The fraction of the sky covered by the cloud is approximated to 0 on a clear day
 Diffuse fraction, which is the proportion of solar radiation that is diffuse, is defined as 0.1 on a clear day, 0.5 on a partly sunny day and 1 on a cloudy day. When gaping, we assume a constant mass loss rate of 5% of initial body mass per hour. 
 <br>
 <br>
-<b>Other data</b>: Elevation data are obtained from the NOAA ETOPO1 Global Relief Model, grid-registered ETOPO1 Ice Surface.
-Zenith angle was calculated using <code>TrenchR::zenith_angle</code> function for each point on the map by the longitude, latitude and the day of the year.
-For any functions that require ground temperatures, they are assumed to be 5 °C warmer than the air temperatures.
-Surface albedo is set to be 0.25 for grass, 0.1 for dark soil and 0.75 for snow covered surface as listed in Campbell & Norman (1997).
-Radiation is estimated as 900 W/m <sup>2</sup>, 500 W/m <sup>2</sup> and 200 W/m <sup>2</sup> for a clear day, a partly sunny day and a cloudy day respectively. <br>

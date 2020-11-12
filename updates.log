@@ -1,0 +1,402 @@
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-04 09:00:02 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202009/20200930/2020093012/tmp2m.01.2020093012.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202009/20200930/2020093012/tmp2m.01.2020093012.daily.grb2'
+Content type 'unknown' length 96546689 bytes (92.1 MB)
+==================================================
+downloaded 92.1 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-05 09:00:03 UTC-----------------"
+syntax error, unexpected WORD_WORD, expecting SCAN_ATTR or SCAN_DATASET or SCAN_ERROR
+context: <html^><head><title>Apache Tomcat/7.0.76 - Error report</title><style><!--H1 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:22px;} H2 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:16px;} H3 {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;font-size:14px;} BODY {font-family:Tahoma,Arial,sans-serif;color:black;background-color:white;} B {font-family:Tahoma,Arial,sans-serif;color:white;background-color:#525D76;} P {font-family:Tahoma,Arial,sans-serif;background:white;color:black;font-size:12px;}A {color : black;}A.name {color : black;}HR {color : #525D76;}--></style> </head><body><h1>HTTP Status 404 - /thredds/dodsC/agg_met_tmmx_1979_CurrentYear_CONUS.nc.dds</h1><HR size="1" noshade="noshade"><p><b>type</b> Status report</p><p><b>message</b> <u>/thredds/dodsC/agg_met_tmmx_1979_CurrentYear_CONUS.nc.dds</u></p><p><b>description</b> <u>The requested resource is not available.</u></p><HR size="1" noshade="noshade"><h3>Apache Tomcat/7.0.76</h3></body></html>
+Error in { : task 1 failed - "NetCDF: file not found"
+Calls: getGridMET -> fast.download -> %dopar% -> <Anonymous>
+In addition: Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-06 09:00:03 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201002/2020100212/tmp2m.01.2020100212.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201002/2020100212/tmp2m.01.2020100212.daily.grb2'
+Content type 'unknown' length 95881949 bytes (91.4 MB)
+==================================================
+downloaded 91.4 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-07 09:00:02 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201003/2020100312/tmp2m.01.2020100312.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201003/2020100312/tmp2m.01.2020100312.daily.grb2'
+Content type 'unknown' length 95586925 bytes (91.2 MB)
+==================================================
+downloaded 91.2 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-08 09:00:03 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201004/2020100412/tmp2m.01.2020100412.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201004/2020100412/tmp2m.01.2020100412.daily.grb2'
+Content type 'unknown' length 95229663 bytes (90.8 MB)
+==================================================
+downloaded 90.8 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-09 09:00:03 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201005/2020100512/tmp2m.01.2020100512.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201005/2020100512/tmp2m.01.2020100512.daily.grb2'
+Content type 'unknown' length 95006235 bytes (90.6 MB)
+==================================================
+downloaded 90.6 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-10 09:00:02 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201006/2020100612/tmp2m.01.2020100612.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201006/2020100612/tmp2m.01.2020100612.daily.grb2'
+Content type 'unknown' length 94560528 bytes (90.2 MB)
+==================================================
+downloaded 90.2 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-11 09:00:03 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201007/2020100712/tmp2m.01.2020100712.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201007/2020100712/tmp2m.01.2020100712.daily.grb2'
+Content type 'unknown' length 94275314 bytes (89.9 MB)
+==================================================
+downloaded 89.9 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-12 09:00:02 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201008/2020100812/tmp2m.01.2020100812.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201008/2020100812/tmp2m.01.2020100812.daily.grb2'
+Content type 'unknown' length 94024507 bytes (89.7 MB)
+==================================================
+downloaded 89.7 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-13 09:00:02 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201009/2020100912/tmp2m.01.2020100912.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201009/2020100912/tmp2m.01.2020100912.daily.grb2'
+Content type 'unknown' length 93703896 bytes (89.4 MB)
+==================================================
+downloaded 89.4 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-14 09:00:02 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201010/2020101012/tmp2m.01.2020101012.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201010/2020101012/tmp2m.01.2020101012.daily.grb2'
+Content type 'unknown' length 93422385 bytes (89.1 MB)
+==================================================
+downloaded 89.1 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-15 09:00:03 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201011/2020101112/tmp2m.01.2020101112.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201011/2020101112/tmp2m.01.2020101112.daily.grb2'
+Content type 'unknown' length 93084922 bytes (88.8 MB)
+==================================================
+downloaded 88.8 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-16 09:00:02 UTC-----------------"
+Warning message:
+In if (!apply(int, 1, any)) { :
+  the condition has length > 1 and only the first element will be used
+Linking to GEOS 3.6.2, GDAL 2.2.3, PROJ 4.9.3
+Reading layer `UnitedStates_Boundary' from data source `/home/rstudio/RShiny_BiophysicalModelMap/UnitedStates_Boundary.shp' using driver `ESRI Shapefile'
+Simple feature collection with 1 feature and 0 fields
+geometry type:  MULTIPOLYGON
+dimension:      XY
+bbox:           xmin: -179.1483 ymin: -14.54866 xmax: 179.773 ymax: 71.38781
+CRS:            NA
+ [1] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[16] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[31] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[46] TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE TRUE
+[1] "------------------Getting data from https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201012/2020101212/tmp2m.01.2020101212.daily.grb2---------------------"
+trying URL 'https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/2020/202010/20201012/2020101212/tmp2m.01.2020101212.daily.grb2'
+Content type 'unknown' length 92795139 bytes (88.5 MB)
+==================================================
+downloaded 88.5 MB
+
+[1] "------------------Creating 28 layers--------------------"
+[1] "------------------Updates completed--------------------"
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-17 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-18 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-19 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-20 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-21 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-22 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-23 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-24 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-25 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-26 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-27 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-28 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-29 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-30 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-10-31 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-01 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-02 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-03 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-04 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-05 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-06 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-07 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-08 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-09 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-10 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-11 09:00:03 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
+Loading required package: sp
+[1] "----------------Starting update at 2020-11-12 09:00:02 UTC-----------------"
+Error: object 'getgrid' not found
+Execution halted
