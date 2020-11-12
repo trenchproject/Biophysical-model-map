@@ -1,6 +1,6 @@
 # Automatically updates data source every day at 2 am EST
 
-setwd("/home/rstudio/RShiny_BiophysicalModelMap")
+#setwd("/home/rstudio/RShiny_BiophysicalModelMap")
 
 library("stringr")
 library("raster")
@@ -22,15 +22,14 @@ valid_url <- function(url_in, t = 2){
 library(AOI)
 library(climateR)
 AOI = aoi_get(state = "conus")
-getgrid
 p = getGridMET(AOI, param = 'tmax', startDate = Sys.Date() - 3)
 
 r = raster::brick(p)
 
 # Download US boundary from https://www.igismap.com/united-states-shapefile-download-free-map-boundary-states-and-county/
 library("sf")
-shape <- st_read("UnitedStates_Boundary.shp")
-
+#shape <- st_read("UnitedStates_Boundary.shp")
+shape <- st_read("cb_2019_us_nation_5m.shp")
 # Remove all the files in the folder
 do.call(file.remove, list(list.files("/home/rstudio/RShiny_BiophysicalModelMap/Forecasts", full.names = TRUE)))
 
