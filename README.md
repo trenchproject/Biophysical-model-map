@@ -1,6 +1,6 @@
 # RShiny_BiophysicalModelMap
 
-BiophysicalModelMap is an interactive shiny app that allows users to visualize the current and future operative temperatures of organisms. The app covers lizards, grasshoppers, butterflies, snails, mussels, and salamandars using the biophysical model functions from [TrenchR](https://github.com/trenchproject/TrenchR). Future temperatures are obtained from [CMIP5 multimodel ensemble](https://gdo-dcp.ucllnl.org/downscaled_cmip_projections/#Welcome) with RCP2.6, RCP6.0 and RCP8.5 projections, which are considered as optimistic, intermediate and pessimistic scenarios, respectively.
+BiophysicalModelMap is an interactive shiny app that allows users to visualize the current and future operative temperatures of organisms across the United States. The app covers lizards, grasshoppers, butterflies, snails, mussels, and salamandars using the biophysical model functions from [TrenchR](https://github.com/trenchproject/TrenchR). Future temperatures are obtained from [CMIP5 multimodel ensemble](https://gdo-dcp.ucllnl.org/downscaled_cmip_projections/#Welcome) with RCP2.6, RCP6.0 and RCP8.5 projections, which are considered as optimistic, intermediate and pessimistic scenarios, respectively.
 We use ```climateR::getGridMET``` to obtain recent weather data and [Climate Forecast System](https://www.ncdc.noaa.gov/data-access/model-data/model-datasets/climate-forecast-system-version2-cfsv2) for near-term forecast data.
 
 
