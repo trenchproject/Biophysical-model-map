@@ -26,8 +26,6 @@ library("AOI")
 library("RCurl")
 library("stringr")
 library("sf")
-# library("shinysky")
-library("miniUI")
 
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
@@ -66,7 +64,6 @@ shinyUI <- fluidPage(
         
         mainPanel(
           switchInput(inputId = "scale", label = "Scale", onLabel = "Discrete", offLabel = "Continuous", inline = TRUE, value = TRUE, size = "small"),
-          #sliderInput("offset", "Warming offset (°C)", min = -5, max = 5, value = 0, step = 0.5),
           htmlOutput("title"),
           leafletOutput("mymap") %>% withSpinner(type = 7),
         )
