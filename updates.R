@@ -1,6 +1,6 @@
 # Automatically updates data source every day at 2 am EST
 
-#setwd("/home/rstudio/RShiny_BiophysicalModelMap")
+setwd(/srv/shinyapps/RShiny_BiophysicalModelMap")
 
 library("stringr")
 library("raster")
@@ -31,7 +31,7 @@ library("sf")
 #shape <- st_read("UnitedStates_Boundary.shp")
 shape <- st_read("cb_2019_us_nation_5m.shp")
 # Remove all the files in the folder
-do.call(file.remove, list(list.files("/home/rstudio/RShiny_BiophysicalModelMap/Forecasts", full.names = TRUE)))
+do.call(file.remove, list(list.files("Forecasts", full.names = TRUE)))
 
 #__________________________________________________________________________
 
