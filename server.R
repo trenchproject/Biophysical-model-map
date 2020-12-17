@@ -15,6 +15,8 @@ df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
 updates <- read.csv("LastDate")
 lastDate <- as.Date(updates$LastDate)
 
+setwd("/srv/shinyapps/RShiny_BiophysicalModelMap")
+
 # Set up server
 shinyServer <- function(input, output, session) {
   
