@@ -1,7 +1,5 @@
 # Automatically updates data source every day at 2 am EST
 
-setwd("/srv/shinyapps/RShiny_BiophysicalModelMap")
-
 library("stringr")
 library("raster")
 

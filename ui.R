@@ -29,8 +29,6 @@ library("sf")
 
 monthNames <- c("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
-setwd("/srv/shinyapps/RShiny_BiophysicalModelMap")
-
 
 shinyUI <- fluidPage(
   theme = shinytheme("united"),
