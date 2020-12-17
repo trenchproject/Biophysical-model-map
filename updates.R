@@ -3,6 +3,8 @@
 library("stringr")
 library("raster")
 
+setwd("/code")
+
 print(str_c("----------------Starting update at ", Sys.time(), " UTC-----------------"))
 
 valid_url <- function(url_in, t = 2){
