@@ -54,14 +54,16 @@ while(!valid_url(url1)) {
 
 url2 = NA
 hour = 24
-while(!valid_url(url2)) {
+while(!valid_url(url2) && hour > 0) {
   hour = hour - 6
+  char_hour <- ifelse(hour < 10, paste0("0", hour), hour)
+  
   url2 = paste0("https://www.ncei.noaa.gov/data/climate-forecast-system/access/operational-9-month-forecast/time-series/", 
                  year, "/",
                  year, month, "/", 
                  year, month, day, "/",
-                 year, month, day, hour, "/tmp2m.01.", 
-                 year, month, day, hour, ".daily.grb2")
+                 year, month, day, char_hour, "/tmp2m.01.", 
+                 year, month, day, char_hour, ".daily.grb2")
 }
 
 filename <- "forecast.grb2"
