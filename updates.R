@@ -28,7 +28,7 @@ r = raster::brick(p)
 
 # Download US boundary from https://www.igismap.com/united-states-shapefile-download-free-map-boundary-states-and-county/
 library("sf")
-print(getwd())
+
 #shape <- st_read("UnitedStates_Boundary.shp")
 shape <- st_read("cb_2019_us_nation_5m.shp")
 

@@ -212,7 +212,7 @@ shinyServer <- function(input, output, session) {
 
     if (input$year == "This week") {
       filename <- paste0("Forecasts/tmp", str_replace_all(input$date, "-", ""), "_", str_split(input$time, ":00")[[1]][1])
-      airTemp <- raster(filename)
+      airTemp <- raster(filename) %>% resample(r)
     } else {
       airTemp <- diurnal_temp_variation_sine(r$tmax - 273.15, r$tmin - 273.15, hour())
       
