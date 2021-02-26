@@ -5,12 +5,13 @@ hours <- c("12 AM","01 AM","02 AM","03 AM","04 AM","05 AM","06 AM","07 AM","08 A
 
 AOI = aoi_get(state = "conus")
 x = 3
-elevData <- raster("elevData.grd")
 
 p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - x, endDate = Sys.Date() - x)
 r = raster::brick(p)
 names(r) = c('tmin', 'tmax', 'wind')
 df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
+
+elevData <- raster("elevData.grd") %>% resample(r)
 
 updates <- read.csv("LastDate")
 lastDate <- as.Date(updates$LastDate)
@@ -364,7 +365,6 @@ shinyServer <- function(input, output, session) {
                       group = group
                       )
     }
-    print(paste0("Origin of bodyTemp: ", origin(Tb)))
     Tb
   })
 
