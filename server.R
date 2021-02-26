@@ -15,38 +15,10 @@ df <- rasterToPoints(r) %>% as.data.frame() %>% dplyr::select("x", "y")
 updates <- read.csv("LastDate")
 lastDate <- as.Date(updates$LastDate)
 
+rasterOptions(tolerance = 0.1)
+
 # Set up server
 shinyServer <- function(input, output, session) {
-  
-  # r <- reactive({
-  #   # month <- which(input$monthAll %in% monthNames)
-  #   
-  #   # if (input$options == "gridMET") {
-  #     # For gridMET, we need tmax, tmin and wind speed from the specified month, either from this year or last year, whichever that's closer.
-  #     # year = 2020
-  #     # if (which(input$monthAll %in% monthNames) > 7) {
-  #     #   year = year - 1
-  #     # }
-  #     # 
-  #     # date <- as.Date(paste0(year, "-", month, "-15"))
-  #     #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = "2020-6-15", endDate = "2020-6-15")
-  #     
-  #     #p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = date, endDate = date)
-  #     p = getGridMET(AOI, param = c('tmax', 'tmin', 'wind_vel'), startDate = Sys.Date() - 2, endDate = Sys.Date() - 2)
-  #     r = raster::brick(p)
-  #     names(r) = c('tmin', 'tmax', 'wind')
-  #     rm(p)
-  #   # } else {
-  #   #   # For microclim, we just need the wind speed but from 1990
-  #   #   
-  #   #   date <- as.Date(paste0("1990-", month, "-15"))
-  #   #   p = getGridMET(AOI, param = 'wind_vel', startDate = date, endDate = date)
-  #   #   r = raster::brick(p)
-  #   #   names(r) = "wind"
-  #   # }
-  #   r
-  # })
-  
 
   #___________________________________________________________________________________
   # renderUI's
@@ -257,32 +229,7 @@ shinyServer <- function(input, output, session) {
         airTemp <- airTemp + raster(paste0("year", input$year, "dif/rcp", scn, "/", month, ".grd"))
       }
     }
-      
-    # } else if (input$options == "microclim") {
-    #   # filename <- paste0("microclim/", input$monthAll, ".grd")
-    #   # Ta <- brick(filename)
-    #   # airTemp <- Ta[[hour()]]
-    #   
-    #   filename <- paste0("microclim_short/", input$monthAll, ".grd")
-    #   airTemp <- raster(filename)
-    #   
-    #   if (input$year != "recent") {
-    #     validate(
-    #       need(input$scenario, "")
-    #     )
-    #     if (input$scenario == "Optimistic") {
-    #       scn <- 26
-    #     } else if (input$scenario == "Intermediate") {
-    #       scn <- 60
-    #     } else {
-    #       scn <- 85
-    #     }
-    #     
-    #     yearfile <- paste0("year", input$year, "dif/rcp", scn, "/", input$monthAll, ".grd")
-    #     # dif <- resample(raster(yearfile), Ta)
-    #     airTemp <- airTemp + raster(yearfile)
-    #   }
-    # }
+
     airTemp
   })
   
