@@ -240,7 +240,10 @@ shinyServer <- function(input, output, session) {
     )
 
     airTemp <- airTemp()
-                   
+    print(paste0("Origin of elevData: ", origin(elevData)))
+    print(paste0("Origin of airTemp: ", origin(airTemp)))
+    print(paste0("Difference: ", origin(elevData) - origin(airTemp)))
+    
     if (input$species %in% c("Grasshopper", "Butterfly", "Salamander", "Snail", "Mussel")) {
       validate(
         need(input$weather, "")
@@ -293,8 +296,8 @@ shinyServer <- function(input, output, session) {
       
     } else if (input$species == "Grasshopper") {
       
-      Tb <- Tb_grasshopper(T_a = airTemp(), 
-                           T_g = airTemp() + 5, 
+      Tb <- Tb_grasshopper(T_a = airTemp, 
+                           T_g = airTemp + 5, 
                            u = r$wind, 
                            H = rad, 
                            K_t = kt, 
@@ -311,7 +314,7 @@ shinyServer <- function(input, output, session) {
       Tb <- Tb_salamander_humid(r_i = 4,
                                 r_b = 1,
                                 D = input$diam / 1000,
-                                T_a = airTemp(),
+                                T_a = airTemp,
                                 elev = elevData,
                                 e_s = 2.5,
                                 e_a = 2,
@@ -326,9 +329,9 @@ shinyServer <- function(input, output, session) {
         need(input$diam, "")
       )
       
-      Tb <- Tb_butterfly(T_a = airTemp(),
-                         Tg = airTemp() + 5,
-                         Tg_sh = airTemp() - 5, 
+      Tb <- Tb_butterfly(T_a = airTemp,
+                         Tg = airTemp + 5,
+                         Tg_sh = airTemp - 5, 
                          u = r$wind, 
                          H_sdir = rad,
                          H_sdif = rad / 2,
@@ -342,7 +345,7 @@ shinyServer <- function(input, output, session) {
       
     } else if (input$species == "Snail") {
       
-      Tb <- Tb_snail(temp = airTemp(), 
+      Tb <- Tb_snail(temp = airTemp, 
                      Len = 12 / 1000, # in m
                      solar = rad,
                      WS = r$wind,
@@ -368,7 +371,7 @@ shinyServer <- function(input, output, session) {
                       group = group
                       )
     }
-    
+    print(paste0("Origin of bodyTemp: ", origin(Tb)))
     Tb
   })
 
