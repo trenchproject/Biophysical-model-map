@@ -226,7 +226,7 @@ shinyServer <- function(input, output, session) {
         } else {
           scn <- 85
         }
-        airTemp <- airTemp + raster(paste0("year", input$year, "dif/rcp", scn, "/", month, ".grd"))
+        airTemp <- airTemp + raster(paste0("year", input$year, "dif/rcp", scn, "/", month, ".grd")) %>% resample(r)
       }
     }
 
